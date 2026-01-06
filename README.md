@@ -8,11 +8,12 @@ A high-performance, native Python desktop application for professional technical
 - **Setup Perfection Visuals**: "Perfected" Setup bars are automatically highlighted in **Magenta** for immediate identification of key price exhaustion points.
 - **Professional Charting Engine**:
     - **Native Rendering**: High-performance candlestick chart drawn using PySide6 `QPainter`.
+    - **Enriched Metadata**: Chart title now includes Full Name, Exchange, and Currency for each symbol.
     - **Smart Crosshairs**: Fine dotted lines that automatically snap to the **Close** price and bar center.
     - **Adaptive Date Axis**: Intelligently labels Years and Months based on zoom level, using contextual formatting to reduce clutter.
     - **"Nice Number" Price Axis**: Dynamic gridlines that snap to clean mathematical increments (1-2-5 logic) with adaptive decimal precision.
 - **Interactive UI**:
-    - **Smooth Navigation**: Mouse wheel for zooming and click-drag for panning.
+    - **Smooth Navigation**: Mouse wheel or **Pinch-to-Zoom** (touchscreens) for zooming, and click-drag for panning.
     - **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, right-justified format.
 - **Data Integration**: Automatic historical daily data downloads via `yfinance`.
 

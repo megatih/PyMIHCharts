@@ -25,7 +25,8 @@ PyMIHCharts is a high-performance, native Python desktop application for technic
 - **Rendering**: Uses a single `paintEvent` with cached GDI objects (Pens, Fonts, Colors) to minimize allocation overhead.
 - **Visuals**:
   - Highlights **Perfected Setup bars** in Magenta.
-  - Features a dynamic legend with indicator descriptions.
+  - Features a **horizontal legend** at the top-left corner below the title.
+  - Dynamically renders an enriched title with Full Name, Exchange, and Currency.
 - **Smart Date Axis**: 
   - Scans visible data for Month/Year transitions.
   - Calculates an optimal `month_step` (1, 2, 3, 6) based on pixel density.
@@ -34,6 +35,7 @@ PyMIHCharts is a high-performance, native Python desktop application for technic
   - Uses **1-2-5 logic** to find "nice" mathematical increments.
   - Dynamically calculates decimal precision based on the current increment size.
 - **Interaction**:
+  - **Zoom/Pan**: Supports mouse wheel, click-drag, and **Pinch-to-Zoom** gestures for touchscreens.
   - **Crosshairs**: Snaps horizontal line to `Close` and vertical line to `Bar Center`.
   - **Hover**: Emits rich-text compatible data for the status bar.
 

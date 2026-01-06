@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-01-06
+
+### Added
+- **Enriched Chart Header**: The chart now displays the asset's full name, exchange, and currency, fetched dynamically via `yfinance`.
+- **Touchscreen Support**: Implemented **Pinch-to-Zoom** functionality using PySide6's native gesture framework.
+- **Horizontal Legend**: Redesigned the legend as a compact horizontal bar located at the top-left for better chart visibility and space efficiency.
+
+### Fixed
+- **PySide6 Compatibility**: Resolved `AttributeError` by correctly referencing `QEvent.Gesture` and `Qt.GestureType.PinchGesture`.
+- **Code Optimization**: Removed duplicate method definitions and refined the rendering pipeline padding.
+
 ## [1.1.0] - 2026-01-06
 
 ### Added
