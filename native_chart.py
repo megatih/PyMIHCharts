@@ -10,9 +10,9 @@ import sys
 import math
 from typing import Optional, Dict, Any, List
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QPinchGesture, QGestureEvent
 from PySide6.QtGui import QPainter, QColor, QPen, QFont, QMouseEvent, QWheelEvent
-from PySide6.QtCore import Qt, QRectF, QPointF, Signal
+from PySide6.QtCore import Qt, QRectF, QPointF, Signal, QEvent
 import pandas as pd
 import numpy as np
 
@@ -23,7 +23,7 @@ class CandlestickChart(QWidget):
 
     Features:
     - High-performance QPainter-based rendering.
-    - Interactive zoom (mouse wheel) and pan (click-drag).
+    - Interactive zoom (mouse wheel and pinch-to-zoom) and pan (click-drag).
     - Dynamic price axis with "nice" increments (1-2-5 logic).
     - Smart date axis that adapts to zoom levels.
     - TD Sequential indicator visualization (Setup and Countdown).
@@ -37,6 +37,9 @@ class CandlestickChart(QWidget):
         super().__init__(parent)
         self.df: Optional[pd.DataFrame] = None
         self.symbol: str = ""
+        self.full_name: str = ""
+        self.exchange: str = ""
+        self.currency: str = ""
         
         # --- View State ---
         self.visible_bars: int = 150
@@ -45,7 +48,7 @@ class CandlestickChart(QWidget):
         # --- Layout & Margins ---
         self.padding_left: int = 60
         self.padding_right: int = 60
-        self.padding_top: int = 40
+        self.padding_top: int = 60  # Increased to accommodate legend at top-left
         self.padding_bottom: int = 40
 
         # --- Interaction State ---
@@ -54,7 +57,7 @@ class CandlestickChart(QWidget):
 
         # --- Cached GDI Objects ---
         # Initializing objects once to avoid allocation overhead during paintEvent
-        self.font_main = QFont("Arial", 12, QFont.Bold)
+        self.font_main = QFont("Arial", 11, QFont.Bold)
         self.font_labels = QFont("Arial", 8)
         self.font_countdown = QFont("Arial", 10, QFont.Bold)
         
@@ -70,17 +73,52 @@ class CandlestickChart(QWidget):
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.StrongFocus)
+        
+        # Register for Gestures (Touchscreen support)
+        self.grabGesture(Qt.GestureType.PinchGesture)
 
-    def set_data(self, df: pd.DataFrame, symbol: str):
+    def event(self, event):
+        """Standard Qt event override to route gesture events."""
+        if event.type() == QEvent.Gesture:
+            return self.gestureEvent(event)
+        return super().event(event)
+
+    def gestureEvent(self, event: QGestureEvent):
+        """Handles routing of specific gesture types."""
+        if gesture := event.gesture(Qt.GestureType.PinchGesture):
+            self.pinchTriggered(gesture)
+        return True
+
+    def pinchTriggered(self, gesture: QPinchGesture):
+        """Calculates zoom level based on pinch scale factor."""
+        factor = gesture.scaleFactor()
+        if factor != 1.0 and self.df is not None:
+            # Adjust visible bars based on the relative scale factor
+            # factor > 1 (pinch out) means Zoom In -> fewer bars
+            # factor < 1 (pinch in) means Zoom Out -> more bars
+            new_visible = int(self.visible_bars / factor)
+            
+            # Constraints
+            limit = len(self.df)
+            self.visible_bars = max(20, min(limit, new_visible))
+            self.update()
+
+    def set_data(self, df: pd.DataFrame, symbol: str, full_name: str = "", exchange: str = "", currency: str = ""):
         """
         Updates the chart with new price data and indicator results.
 
         Args:
             df: DataFrame containing Open, High, Low, Close and TD columns.
             symbol: The ticker symbol string for the title.
+            full_name: Full name of the company/asset.
+            exchange: Exchange where the asset is traded.
+            currency: Currency in which the asset is priced.
         """
         self.df = df
         self.symbol = symbol
+        self.full_name = full_name
+        self.exchange = exchange
+        self.currency = currency
         self.scroll_offset = 0
         if df is not None and not df.empty:
             # Adjust visible bars if the dataset is small
@@ -282,32 +320,37 @@ class CandlestickChart(QWidget):
                     painter.setPen(self.color_cd_sell)
                     painter.drawText(QRectF(x_center - 15, y_high - 40, 30, 20), Qt.AlignCenter, txt)
 
-        # --- 4. Legend ---
-        lx, ly = self.width() - 180, 10
-        painter.setBrush(QColor(45, 45, 45, 200))
-        painter.setPen(QPen(Qt.gray, 1))
-        painter.drawRect(lx, ly, 160, 110)
-        painter.setFont(self.font_labels)
-        
-        legend_items = [
-            (self.color_setup_buy, "Buy Setup (1-9)"),
-            (self.color_setup_sell, "Sell Setup (1-9)"),
-            (self.color_perfected, "Perfected Setup"),
-            (self.color_cd_buy, "Buy Countdown (13)"),
-            (self.color_cd_sell, "Sell Countdown (13)")
-        ]
-        for idx, (col, txt) in enumerate(legend_items):
-            iy = ly + 15 + (idx * 18)
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(col)
-            painter.drawRect(lx + 10, iy, 10, 10)
-            painter.setPen(Qt.white)
-            painter.drawText(lx + 25, iy + 10, txt)
-
-        # --- 5. Chart Header ---
+        # --- 4. Chart Header ---
         painter.setPen(Qt.white)
         painter.setFont(self.font_main)
-        painter.drawText(20, 30, f"{self.symbol} (Daily)")
+        title_text = f"{self.full_name or self.symbol} ({self.symbol}) - {self.exchange} - {self.currency}"
+        painter.drawText(20, 25, title_text)
+
+        # --- 5. Legend (Top-Left, below title) ---
+        lx, ly = 20, 35
+        # Draw a semi-transparent background for the legend
+        painter.setBrush(QColor(45, 45, 45, 150))
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(lx - 5, ly - 5, 450, 25)
+        
+        legend_items = [
+            (self.color_setup_buy, "Buy Setup"),
+            (self.color_setup_sell, "Sell Setup"),
+            (self.color_perfected, "Perfected"),
+            (self.color_cd_buy, "Buy Countdown"),
+            (self.color_cd_sell, "Sell Countdown")
+        ]
+        
+        painter.setFont(self.font_labels)
+        curr_lx = lx
+        for col, txt in legend_items:
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(col)
+            painter.drawRect(curr_lx, ly + 2, 10, 10)
+            painter.setPen(Qt.white)
+            painter.drawText(curr_lx + 15, ly + 11, txt)
+            # Advance X for horizontal legend
+            curr_lx += painter.fontMetrics().horizontalAdvance(txt) + 30
 
         # --- 6. Crosshairs (Snap to Bar Center and Close Price) ---
         if self.mouse_point and self.df is not None:

@@ -138,6 +138,12 @@ class TDChartsApp(QMainWindow):
                 QMessageBox.warning(self, "Error", f"No data found for symbol: {symbol}")
                 return
 
+            # Fetch Metadata
+            info = ticker.info
+            full_name = info.get('longName', symbol)
+            exchange = info.get('exchange', 'Unknown Exchange')
+            currency = info.get('currency', 'USD')
+
             # 2. Data Cleaning: Flatten columns if they are MultiIndex (common with yfinance)
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
@@ -146,7 +152,7 @@ class TDChartsApp(QMainWindow):
             df = calculate_td_sequential(df)
 
             # 4. View Update: Pass the enriched DataFrame to the chart
-            self.chart.set_data(df, symbol)
+            self.chart.set_data(df, symbol, full_name, exchange, currency)
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
