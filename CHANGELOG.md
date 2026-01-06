@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [1.1.0] - 2026-01-06
 
 ### Added
-- **Setup Perfection Visuals**: "Perfected" TD Setup bars (1-9) are now highlighted in **Magenta** on the chart for better visibility.
+
+- **Cross-Platform Support Scripts**:
+
+    - Created `setup_macos.sh` for macOS users.
+
+    - Created `setup.bat` and `run.bat` for Windows Command Prompt.
+
+    - Created `setup.ps1` and `run.ps1` for Windows PowerShell.
+
+- **Setup Perfection Visuals**:
+
+ "Perfected" TD Setup bars (1-9) are now highlighted in **Magenta** on the chart for better visibility.
 - **Legend Update**: Added "Perfected Setup" entry to the chart legend.
 - **Automated Setup Script**: Created `setup.sh` for Linux to automate virtual environment creation and dependency installation.
     - Added system-level library checks for PySide6/Qt requirements.

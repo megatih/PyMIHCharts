@@ -22,16 +22,22 @@ A high-performance, native Python desktop application for professional technical
 - Python 3.8+
 - Linux (X11/Wayland), Windows, or macOS
 
-### Quick Start
-1. Clone the repository and navigate to the directory.
-2. Run the automated setup script to create the environment and check dependencies:
-   ```bash
-   ./setup.sh
-   ```
-3. Launch the application:
-   ```bash
-   ./run.sh
-   ```
+#### Quick Start (Linux)
+1. Run the automated setup script: `./setup.sh`
+2. Launch: `./run.sh`
+
+### Quick Start (macOS)
+1. Run the automated setup script: `./setup_macos.sh`
+2. Launch: `./run.sh`
+
+### Quick Start (Windows)
+**Using Command Prompt:**
+1. Run: `setup.bat`
+2. Launch: `run.bat`
+
+**Using PowerShell:**
+1. Run: `./setup.ps1`
+2. Launch: `./run.ps1`
 
 *Manual Setup:*
 ```bash
