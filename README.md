@@ -54,4 +54,4 @@ python3 main.py
 4. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
 
 ## License
-MIT
+Parity Public License 7.0.0 (See LICENSE.md for details)
