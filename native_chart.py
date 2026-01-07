@@ -61,6 +61,7 @@ class CandlestickChart(QWidget):
         self.font_labels = QFont("Arial", 8)
         self.font_countdown = QFont("Arial", 10, QFont.Bold)
         
+        # Default colors (will be overridden by apply_theme)
         self.pen_grid = QPen(QColor(60, 60, 60), 1)
         self.color_bg = QColor(30, 30, 30)
         self.color_bull = QColor(0, 200, 0)
@@ -70,12 +71,33 @@ class CandlestickChart(QWidget):
         self.color_cd_buy = QColor(0, 255, 255)
         self.color_cd_sell = QColor(255, 255, 0)
         self.color_perfected = QColor(255, 0, 255)  # Magenta for perfected setups
+        self.color_text_main = Qt.white
+        self.color_text_label = Qt.gray
+        self.color_crosshair = QColor(150, 150, 150)
+        self.color_widget_bg = QColor(45, 45, 45)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.StrongFocus)
         
         # Register for Gestures (Touchscreen support)
         self.grabGesture(Qt.GestureType.PinchGesture)
+
+    def apply_theme(self, theme: Dict[str, str]):
+        """Updates the chart colors based on the selected theme."""
+        self.color_bg = QColor(theme["chart_bg"])
+        self.color_widget_bg = QColor(theme["widget_bg"])
+        self.pen_grid = QPen(QColor(theme["grid"]), 1)
+        self.color_bull = QColor(theme["bull"])
+        self.color_bear = QColor(theme["bear"])
+        self.color_setup_buy = QColor(theme["setup_buy"])
+        self.color_setup_sell = QColor(theme["setup_sell"])
+        self.color_cd_buy = QColor(theme["cd_buy"])
+        self.color_cd_sell = QColor(theme["cd_sell"])
+        self.color_perfected = QColor(theme["perfected"])
+        self.color_text_main = QColor(theme["text_main"])
+        self.color_text_label = QColor(theme["text_label"])
+        self.color_crosshair = QColor(theme["crosshair"])
+        self.update()
 
     def event(self, event):
         """Standard Qt event override to route gesture events."""
@@ -198,7 +220,7 @@ class CandlestickChart(QWidget):
             painter.drawLine(self.padding_left, y, self.width() - self.padding_right, y)
             
             # Draw price label on the right
-            painter.setPen(Qt.gray)
+            painter.setPen(self.color_text_label)
             txt = f"{curr_tick:.{precision}f}"
             painter.drawText(self.width() - self.padding_right + 5, int(y + 5), txt)
             
@@ -246,11 +268,11 @@ class CandlestickChart(QWidget):
                     painter.drawLine(x, self.padding_top, x, self.height() - self.padding_bottom)
                     
                     if trans['is_year']:
-                        painter.setPen(Qt.white)
+                        painter.setPen(self.color_text_main)
                         painter.setFont(QFont("Arial", 8, QFont.Bold))
                         txt = d.strftime('%Y')
                     else:
-                        painter.setPen(Qt.gray)
+                        painter.setPen(self.color_text_label)
                         painter.setFont(self.font_labels)
                         txt = d.strftime('%b')
                     
@@ -321,7 +343,7 @@ class CandlestickChart(QWidget):
                     painter.drawText(QRectF(x_center - 15, y_high - 40, 30, 20), Qt.AlignCenter, txt)
 
         # --- 4. Chart Header ---
-        painter.setPen(Qt.white)
+        painter.setPen(self.color_text_main)
         painter.setFont(self.font_main)
         title_text = f"{self.full_name or self.symbol} ({self.symbol}) - {self.exchange} - {self.currency}"
         painter.drawText(20, 25, title_text)
@@ -329,7 +351,9 @@ class CandlestickChart(QWidget):
         # --- 5. Legend (Top-Left, below title) ---
         lx, ly = 20, 35
         # Draw a semi-transparent background for the legend
-        painter.setBrush(QColor(45, 45, 45, 150))
+        bg_col = QColor(self.color_widget_bg)
+        bg_col.setAlpha(150)
+        painter.setBrush(bg_col)
         painter.setPen(Qt.NoPen)
         painter.drawRect(lx - 5, ly - 5, 450, 25)
         
@@ -347,7 +371,7 @@ class CandlestickChart(QWidget):
             painter.setPen(Qt.NoPen)
             painter.setBrush(col)
             painter.drawRect(curr_lx, ly + 2, 10, 10)
-            painter.setPen(Qt.white)
+            painter.setPen(self.color_text_main)
             painter.drawText(curr_lx + 15, ly + 11, txt)
             # Advance X for horizontal legend
             curr_lx += painter.fontMetrics().horizontalAdvance(txt) + 30
@@ -368,7 +392,7 @@ class CandlestickChart(QWidget):
                     # Snap horizontal line to the bar's Close price
                     snap_y = price_to_y(self.df['Close'].iloc[act_idx])
                     
-                    cross_pen = QPen(QColor(150, 150, 150), 1, Qt.DashLine)
+                    cross_pen = QPen(self.color_crosshair, 1, Qt.DashLine)
                     painter.setPen(cross_pen)
                     # Vertical crosshair
                     painter.drawLine(QPointF(snap_x, self.padding_top), 

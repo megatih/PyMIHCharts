@@ -18,6 +18,7 @@ from PySide6.QtCore import Qt
 
 from td_sequential import calculate_td_sequential
 from native_chart import CandlestickChart
+from themes import THEMES
 
 
 class TDChartsApp(QMainWindow):
@@ -36,13 +37,21 @@ class TDChartsApp(QMainWindow):
         self.setWindowTitle("PyMIHCharts - Native TD Sequential")
         self.resize(1200, 800)
         
-        # Apply dark theme stylesheet
-        self.setStyleSheet("background-color: #1e1e1e; color: white;")
+        self.current_theme_name = "Default"
 
         # --- UI Construction ---
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
         self.layout = QVBoxLayout(self.main_widget)
+
+        # 0. Menu Bar
+        self.menu_bar = self.menuBar()
+        self.view_menu = self.menu_bar.addMenu("View")
+        self.theme_menu = self.view_menu.addMenu("Color Scheme")
+        
+        for theme_name in THEMES.keys():
+            action = self.theme_menu.addAction(theme_name)
+            action.triggered.connect(lambda checked=False, name=theme_name: self.change_theme(name))
 
         # 1. Header Control Panel (Ticker input and Load button)
         self.controls = QHBoxLayout()
@@ -50,17 +59,10 @@ class TDChartsApp(QMainWindow):
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("Enter Ticker (e.g., AAPL, BTC-USD)")
         self.symbol_input.setText("AAPL")
-        self.symbol_input.setStyleSheet(
-            "background-color: #333; border: 1px solid #555; padding: 5px;"
-        )
         self.symbol_input.returnPressed.connect(self.load_data)
         
         self.load_button = QPushButton("Load Chart")
         self.load_button.clicked.connect(self.load_data)
-        self.load_button.setStyleSheet(
-            "QPushButton { background-color: #444; padding: 5px 15px; } "
-            "QPushButton:hover { background-color: #555; }"
-        )
         
         self.controls.addWidget(QLabel("Ticker:"))
         self.controls.addWidget(self.symbol_input)
@@ -73,10 +75,6 @@ class TDChartsApp(QMainWindow):
 
         # 3. Status Bar (HTML-formatted for color-coded data)
         self.status_label = QLabel("Hover over chart to see price data")
-        self.status_label.setStyleSheet(
-            "background-color: #222; color: #aaa; padding: 2px 10px; "
-            "font-family: monospace; border-top: 1px solid #333;"
-        )
         self.status_label.setFixedHeight(25)
         self.status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.layout.addWidget(self.status_label)
@@ -85,8 +83,37 @@ class TDChartsApp(QMainWindow):
         # Update status bar when user hovers over the chart
         self.chart.hovered_data_changed.connect(self.update_status_bar)
 
+        # Apply initial theme
+        self.change_theme("Default")
+
         # Initial data load
         self.load_data()
+
+    def change_theme(self, theme_name: str):
+        """Updates the application and chart colors to the selected theme."""
+        self.current_theme_name = theme_name
+        theme = THEMES[theme_name]
+        
+        # Update Window/Main Stylesheet
+        self.setStyleSheet(f"QMainWindow {{ background-color: {theme['window_bg']}; color: {theme['text_main']}; }}")
+        
+        self.symbol_input.setStyleSheet(
+            f"background-color: {theme['widget_bg']}; color: {theme['text_main']}; "
+            f"border: 1px solid {theme['grid']}; padding: 5px;"
+        )
+        
+        self.load_button.setStyleSheet(
+            f"QPushButton {{ background-color: {theme['button_bg']}; color: {theme['text_main']}; padding: 5px 15px; border: none; }} "
+            f"QPushButton:hover {{ background-color: {theme['button_hover']}; }}"
+        )
+        
+        self.status_label.setStyleSheet(
+            f"background-color: {theme['status_bg']}; color: {theme['status_text']}; padding: 2px 10px; "
+            "font-family: monospace; border-top: 1px solid #333;"
+        )
+        
+        # Update Chart Widget
+        self.chart.apply_theme(theme)
 
     def update_status_bar(self, data: Optional[Dict[str, Any]]):
         """

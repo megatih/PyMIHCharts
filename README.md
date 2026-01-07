@@ -7,7 +7,8 @@ A high-performance, native Python desktop application for professional technical
 ## Key Features
 
 - **Advanced TD Sequential Logic**: Full implementation including Price Flips, Setup (1-9), Setup Perfection, TDST levels, and Countdown (1-13) with the 13-vs-8 qualifier and deferral (+).
-- **Setup Perfection Visuals**: "Perfected" Setup bars are automatically highlighted in **Magenta** for immediate identification of key price exhaustion points.
+- **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
+- **Setup Perfection Visuals**: "Perfected" Setup bars are automatically highlighted in **Magenta** (or theme-specific color) for immediate identification of key price exhaustion points.
 - **Professional Charting Engine**:
     - **Native Rendering**: High-performance candlestick chart drawn using PySide6 `QPainter`.
     - **Enriched Metadata**: Chart title now includes Full Name, Exchange, and Currency for each symbol.

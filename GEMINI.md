@@ -43,16 +43,23 @@ PyMIHCharts is a high-performance, native Python desktop application for technic
 - Manages the top-level layout and styling.
 - Connects the asynchronous-like data loading to the UI.
 - Implements the **HTML-formatted Status Bar** for color-coded data visualization.
+- Handles **Dynamic Theme Switching** via the View menu.
+
+### `themes.py` (Theme Definitions)
+- Centralized dictionary of color schemes (Default, Lilac, Dracula).
+- Defines colors for window backgrounds, widgets, text, and all chart-specific elements.
 
 ## Features & UI Interactions
-
+...
 - **Zoom/Pan**: Fully supported via mouse wheel and drag interactions.
+- **Theme Engine**: Allows switching between dark, Dracula, and soft Lilac schemes at runtime.
 - **Status Bar**: Bolded and color-coded (White: Date, Orange: Open, Green: High, Red: Low, Cyan: Close).
 - **Native Experience**: Bypasses GPU/WebEngine issues common on Linux.
 
 ## Development Conventions
 
 - **Performance**: Prefer NumPy vectorization over Pandas `.apply()` or raw Python loops.
+- **Themes**: All new UI elements must use the `THEMES` dictionary for color assignments.
 - **Documentation**: All modules must maintain PEP 257 docstrings and PEP 484 type hints.
 - **Setup**: Use `setup.sh` for managing the Linux environment and checking system-level Qt dependencies.
 - **UI**: Keep rendering logic inside `native_chart.py` and coordinate logic in `main.py`.

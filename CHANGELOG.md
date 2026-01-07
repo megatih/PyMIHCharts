@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-01-07
+
+### Added
+- **Dynamic Theme Engine**: Introduced a centralized theme management system (`themes.py`) supporting real-time GUI color scheme switching.
+- **New Color Schemes**:
+    - **Lilac**: A soft, non-work-oriented aesthetic using lilac and lavender tones.
+    - **Dracula**: Implementation of the popular high-contrast dark theme.
+- **Theme Selection Menu**: Added a "View > Color Scheme" menu for seamless theme toggling.
+- **Themed UI Components**: Buttons, input fields, status bar, and all chart elements (grid, candles, indicators, legend) now dynamically adapt to the selected theme.
+
 ## [1.2.0] - 2026-01-06
 
 ### Added
