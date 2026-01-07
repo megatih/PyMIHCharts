@@ -1,11 +1,11 @@
 """
-Main controller coordinating Model and View.
+Main controller coordinating Model and View with async support.
 """
 
 from typing import Optional, Dict, Any
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QApplication
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject, Slot
 
 from models.data_manager import DataManager
 from models.indicators import calculate_td_sequential
@@ -13,12 +13,13 @@ from views.main_view import MainView
 from views.themes import THEMES
 
 
-class MainController:
+class MainController(QObject):
     """
     Controller that connects the DataManager (Model) with the MainView (View).
     """
 
     def __init__(self, model: DataManager, view: MainView):
+        super().__init__()
         self.model = model
         self.view = view
         self._setup_connections()
@@ -29,6 +30,7 @@ class MainController:
 
     def _setup_connections(self):
         """Wires up view signals to controller slots."""
+        # View -> Controller
         self.view.load_requested.connect(self.load_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
         self.view.theme_requested.connect(self.change_theme)
@@ -41,49 +43,62 @@ class MainController:
         # Chart specific connections
         self.view.chart.hovered_data_changed.connect(self.update_status_bar)
 
+        # Model -> Controller
+        self.model.data_ready.connect(self._on_data_ready)
+        self.model.loading_error.connect(self._on_loading_error)
+
+    @Slot(str)
     def load_data(self, symbol: str):
-        """Handles the workflow of downloading data and updating the UI."""
+        """Requests data from the model."""
         symbol = symbol.upper().strip()
         if not symbol:
             return
 
         self.view.set_loading_state(True)
-        QApplication.processEvents()
-
-        try:
-            df, metadata = self.model.fetch_data(symbol)
-            if df is None:
-                QMessageBox.warning(self.view, "Error", f"No data found for symbol: {symbol}")
-                return
-
-            self.refresh_chart()
-            
-        except Exception as e:
-            QMessageBox.critical(self.view, "Error", f"An error occurred: {str(e)}")
-        finally:
-            self.view.set_loading_state(False)
+        
+        settings = {
+            'lookback': self.view.sidebar.lookback_spin.value(),
+            'setup_max': self.view.sidebar.setup_spin.value(),
+            'countdown_max': self.view.sidebar.countdown_spin.value()
+        }
+        
+        self.model.request_data(symbol, settings)
 
     def refresh_chart(self):
-        """Recalculates indicators based on current sidebar settings and updates the chart."""
-        raw_df = self.model.raw_df
-        if raw_df is None:
+        """Recalculates indicators without re-downloading data."""
+        if self.model.raw_df is None:
             return
 
-        # Get settings from sidebar
+        # Optimization: Just recalculate math on current data
         lookback = self.view.sidebar.lookback_spin.value()
         setup_max = self.view.sidebar.setup_spin.value()
         countdown_max = self.view.sidebar.countdown_spin.value()
 
+        # Small calculation tasks can stay in main thread, 
+        # but for very large datasets we could thread this too.
         processed_df = calculate_td_sequential(
-            raw_df,
+            self.model.raw_df,
             flip_lookback=lookback,
             setup_max=setup_max,
             countdown_max=countdown_max
         )
         
-        metadata = self.model.metadata
+        self._update_view_with_data(processed_df, self.model.metadata)
+
+    def _on_data_ready(self, df, metadata):
+        """Callback for when threaded loading finishes."""
+        self.view.set_loading_state(False)
+        self._update_view_with_data(df, metadata)
+
+    def _on_loading_error(self, message):
+        """Callback for when threaded loading fails."""
+        self.view.set_loading_state(False)
+        QMessageBox.critical(self.view, "Error", message)
+
+    def _update_view_with_data(self, df, metadata):
+        """Helper to push data to the view."""
         self.view.chart.set_data(
-            processed_df, 
+            df, 
             metadata.get('symbol', ''),
             metadata.get('full_name', ''),
             metadata.get('exchange', ''),

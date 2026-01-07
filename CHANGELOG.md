@@ -5,24 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [1.5.0] - 2026-01-07
 
 ### Added
+- **Multi-Threaded Data Engine**: Implemented a dedicated `DataWorker` and `QThread` system to handle market data fetching and indicator calculations. This ensures the GUI remains 100% responsive during intensive processing.
 - **MVC Architecture**: Completely refactored the application to follow the Model-View-Controller pattern for better maintainability and scalability.
-- **Modular Project Structure**: Decomposed monolithic files into a specialized directory structure:
-    - `models/`: Logic for data management and technical indicators.
-    - `views/`: Reusable UI components and rendering engine.
-    - `controllers/`: Coordination between data and user interface.
-- **Dynamic Layout Management**: Implemented font-aware dynamic margin calculations in the chart engine using `QFontMetrics`, ensuring consistent alignment across different resolutions and font settings.
+- **Modular Project Structure**: Decomposed monolithic files into a specialized directory structure (`models/`, `views/`, `controllers/`).
+- **Dynamic Layout Management**: Switched to 100% PySide6 layout managers (`QVBoxLayout`, `QHBoxLayout`) and font-aware dynamic margin calculations, ensuring a pixel-perfect responsive experience across all operating systems.
 
 ### Changed
-- **Code Optimization**: 
-    - Cached high-frequency objects like `QFontMetrics` to reduce CPU overhead during rendering.
-    - Simplified rendering pipelines and coordinate transformations.
-    - Standardized internal signal-slot communication for all UI interactions.
-- **Entry Point**: Updated `main.py` to act as a lightweight application bootstrapper.
+- **Async Signal Flow**: Standardized internal communication using asynchronous signal-slot connections between the Model workers and the Controller.
+- **Performance Optimization**: 
+    - Cached high-frequency objects like `QFontMetrics`.
+    - Improved coordinate transformation efficiency in the rendering engine.
+- **Entry Point**: Streamlined `main.py` to handle application bootstrapping.
 
 ### Fixed
-- **Layout Consistency**: Resolved an issue where toggling the sidebar would cause inconsistent vertical shifts in the header and status bar components.
-- **Runtime Errors**: Fixed multiple `AttributeError` and `NameError` bugs related to initialization order and missing imports in the view layer.
-- **Redundancy Cleanup**: Removed duplicate function definitions and unused code paths across the project.
+- **UI Responsiveness**: Eliminated GUI "freezing" during ticker data downloads.
+- **Layout Consistency**: Resolved an issue where toggling the sidebar would cause inconsistent vertical shifts.
+- **Runtime Errors**: Fixed multiple `AttributeError` and `NameError` bugs related to missing imports and initialization race conditions.
 
 ## [1.4.0] - 2026-01-07
 

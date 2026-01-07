@@ -52,11 +52,11 @@ python3 main.py
 ```
 
 ## Architecture
-PyMIHCharts is built using a modern **Model-View-Controller (MVC)** architecture, ensuring that the application logic, user interface, and data management are decoupled and highly maintainable.
+PyMIHCharts is built using a professional **Model-View-Controller (MVC)** architecture with a fully asynchronous processing engine.
 
-- **Model**: High-performance vectorized indicator math using NumPy.
-- **View**: Native PySide6 rendering engine for fluid, high-frame-rate charting.
-- **Controller**: Efficient coordination between market data and interactive UI signals.
+- **Model**: High-performance vectorized math and threaded data workers for non-blocking performance.
+- **View**: Responsive, layout-driven native PySide6 rendering engine.
+- **Controller**: Real-time signal coordination between the UI and background processing threads.
 
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.

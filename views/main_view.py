@@ -31,29 +31,29 @@ class MainView(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self.main_layout = QVBoxLayout(self.main_widget)
 
-        # Header
+        # Header Container
         self.header_widget = QWidget()
         self.header_layout = QHBoxLayout(self.header_widget)
         
         self.sidebar_toggle_btn = QPushButton("☰")
         self.sidebar_toggle_btn.setToolTip("Toggle Side Panel")
         self.sidebar_toggle_btn.clicked.connect(self.sidebar_toggled.emit)
-        self.header_layout.addWidget(self.sidebar_toggle_btn)
-
+        
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("Enter Ticker (e.g., AAPL, BTC-USD)")
         self.symbol_input.setText("AAPL")
-        self.symbol_input.returnPressed.connect(lambda: self.load_requested.emit(self.symbol_input.text()))
+        self.symbol_input.returnPressed.connect(self._on_load_clicked)
         
         self.load_button = QPushButton("Load Chart")
-        self.load_button.clicked.connect(lambda: self.load_requested.emit(self.symbol_input.text()))
+        self.load_button.clicked.connect(self._on_load_clicked)
         
+        self.header_layout.addWidget(self.sidebar_toggle_btn)
         self.header_layout.addWidget(QLabel("Ticker:"))
         self.header_layout.addWidget(self.symbol_input)
         self.header_layout.addWidget(self.load_button)
         self.main_layout.addWidget(self.header_widget)
 
-        # Content
+        # Content Container (Sidebar + Chart)
         self.content_area = QWidget()
         self.content_layout = QHBoxLayout(self.content_area)
 
@@ -63,14 +63,21 @@ class MainView(QMainWindow):
         
         self.content_layout.addWidget(self.sidebar)
         self.content_layout.addWidget(self.chart)
+        
+        # Priority to the chart
         self.content_layout.setStretchFactor(self.sidebar, 0)
         self.content_layout.setStretchFactor(self.chart, 1)
+        
         self.main_layout.addWidget(self.content_area, stretch=1)
 
-        # Status Bar
+        # Status Bar Container
         self.status_label = QLabel("Hover over chart to see price data")
         self.status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.main_layout.addWidget(self.status_label)
+
+    def _on_load_clicked(self):
+        """Helper to emit load request with current input text."""
+        self.load_requested.emit(self.symbol_input.text())
 
     def _init_menu(self):
         self.menu_bar = self.menuBar()
