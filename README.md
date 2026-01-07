@@ -51,6 +51,13 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
+## Architecture
+PyMIHCharts is built using a modern **Model-View-Controller (MVC)** architecture, ensuring that the application logic, user interface, and data management are decoupled and highly maintainable.
+
+- **Model**: High-performance vectorized indicator math using NumPy.
+- **View**: Native PySide6 rendering engine for fluid, high-frame-rate charting.
+- **Controller**: Efficient coordination between market data and interactive UI signals.
+
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.
 2. Click **Load Chart**.

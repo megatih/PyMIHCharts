@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-01-07
+
+### Added
+- **MVC Architecture**: Completely refactored the application to follow the Model-View-Controller pattern for better maintainability and scalability.
+- **Modular Project Structure**: Decomposed monolithic files into a specialized directory structure:
+    - `models/`: Logic for data management and technical indicators.
+    - `views/`: Reusable UI components and rendering engine.
+    - `controllers/`: Coordination between data and user interface.
+- **Dynamic Layout Management**: Implemented font-aware dynamic margin calculations in the chart engine using `QFontMetrics`, ensuring consistent alignment across different resolutions and font settings.
+
+### Changed
+- **Code Optimization**: 
+    - Cached high-frequency objects like `QFontMetrics` to reduce CPU overhead during rendering.
+    - Simplified rendering pipelines and coordinate transformations.
+    - Standardized internal signal-slot communication for all UI interactions.
+- **Entry Point**: Updated `main.py` to act as a lightweight application bootstrapper.
+
+### Fixed
+- **Layout Consistency**: Resolved an issue where toggling the sidebar would cause inconsistent vertical shifts in the header and status bar components.
+- **Runtime Errors**: Fixed multiple `AttributeError` and `NameError` bugs related to initialization order and missing imports in the view layer.
+- **Redundancy Cleanup**: Removed duplicate function definitions and unused code paths across the project.
+
 ## [1.4.0] - 2026-01-07
 
 ### Added
