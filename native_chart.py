@@ -12,7 +12,7 @@ from typing import Optional, Dict, Any, List
 
 from PySide6.QtWidgets import QWidget, QPinchGesture, QGestureEvent
 from PySide6.QtGui import QPainter, QColor, QPen, QFont, QMouseEvent, QWheelEvent
-from PySide6.QtCore import Qt, QRectF, QPointF, Signal, QEvent
+from PySide6.QtCore import Qt, QRectF, QPointF, Signal, QEvent, QSize
 import pandas as pd
 import numpy as np
 
@@ -44,6 +44,8 @@ class CandlestickChart(QWidget):
         # --- View State ---
         self.visible_bars: int = 150
         self.scroll_offset: int = 0  # Number of bars hidden from the right
+        self.show_td_sequential: bool = True  # Toggle for indicator visibility
+        self.chart_type: str = "Candlestick"  # Candlestick, OHLC, Line, Heiken-Ashi
         
         # --- Layout & Margins ---
         self.padding_left: int = 60
@@ -81,6 +83,10 @@ class CandlestickChart(QWidget):
         
         # Register for Gestures (Touchscreen support)
         self.grabGesture(Qt.GestureType.PinchGesture)
+
+    def sizeHint(self) -> QSize:
+        """Provides a recommended size for the layout manager."""
+        return QSize(800, 600)
 
     def apply_theme(self, theme: Dict[str, str]):
         """Updates the chart colors based on the selected theme."""
@@ -124,6 +130,16 @@ class CandlestickChart(QWidget):
             limit = len(self.df)
             self.visible_bars = max(20, min(limit, new_visible))
             self.update()
+
+    def set_show_td_sequential(self, show: bool):
+        """Toggles the visibility of TD Sequential indicators."""
+        self.show_td_sequential = show
+        self.update()
+
+    def set_chart_type(self, chart_type: str):
+        """Updates the chart rendering style."""
+        self.chart_type = chart_type
+        self.update()
 
     def set_data(self, df: pd.DataFrame, symbol: str, full_name: str = "", exchange: str = "", currency: str = ""):
         """
@@ -172,8 +188,17 @@ class CandlestickChart(QWidget):
             return
 
         # Calculate Price Range for the visible slice
-        min_p = visible_df['Low'].min()
-        max_p = visible_df['High'].max()
+        is_ha = self.chart_type == "Heiken-Ashi"
+        if is_ha:
+            min_p = visible_df['HA_Low'].min()
+            max_p = visible_df['HA_High'].max()
+        elif self.chart_type == "Line":
+            min_p = visible_df['Close'].min()
+            max_p = visible_df['Close'].max()
+        else:
+            min_p = visible_df['Low'].min()
+            max_p = visible_df['High'].max()
+            
         # Add 10% vertical buffer
         buf = (max_p - min_p) * 0.1
         min_p -= buf
@@ -285,62 +310,94 @@ class CandlestickChart(QWidget):
         perfected = visible_df['perfected'].values
         cd_counts = visible_df['countdown_count'].values
         cd_types = visible_df['countdown_type'].values
-        opens = visible_df['Open'].values
-        highs = visible_df['High'].values
-        lows = visible_df['Low'].values
-        closes = visible_df['Close'].values
+        
+        # Determine which price columns to use based on chart type
+        is_ha = self.chart_type == "Heiken-Ashi"
+        opens = visible_df['HA_Open'].values if is_ha else visible_df['Open'].values
+        highs = visible_df['HA_High'].values if is_ha else visible_df['High'].values
+        lows = visible_df['HA_Low'].values if is_ha else visible_df['Low'].values
+        closes = visible_df['HA_Close'].values if is_ha else visible_df['Close'].values
+        
+        # Raw prices for indicators and crosshairs
+        raw_highs = visible_df['High'].values
+        raw_lows = visible_df['Low'].values
 
-        for i in range(len(visible_df)):
-            x_center = self.padding_left + (i + 0.5) * bar_w
+        if self.chart_type == "Line":
+            # Draw Line Chart
+            path_points = []
+            for i in range(len(visible_df)):
+                x_center = self.padding_left + (i + 0.5) * bar_w
+                y_close = price_to_y(closes[i])
+                path_points.append(QPointF(x_center, y_close))
             
-            # Draw Candlestick
-            color = self.color_bull if closes[i] >= opens[i] else self.color_bear
-            painter.setPen(QPen(color, 1))
-            painter.setBrush(color)
-            
-            y_high = price_to_y(highs[i])
-            y_low = price_to_y(lows[i])
-            painter.drawLine(QPointF(x_center, y_high), QPointF(x_center, y_low))
-            
-            y_open = price_to_y(opens[i])
-            y_close = price_to_y(closes[i])
-            body_top = min(y_open, y_close)
-            body_h = max(1, abs(y_open - y_close))
-            painter.drawRect(QRectF(x_center - bar_w * 0.35, body_top, bar_w * 0.7, body_h))
-            
-            # --- Draw TD Setup Phase Numbers ---
-            sc = setup_counts[i]
-            st = setup_types[i]
-            is_perf = perfected[i]
-
-            if sc > 0:
-                painter.setFont(self.font_labels)
-                if is_perf:
-                    painter.setPen(self.color_perfected)
-                elif st == 'buy':
-                    painter.setPen(self.color_setup_buy)
-                else:
-                    painter.setPen(self.color_setup_sell)
+            painter.setPen(QPen(self.color_cd_buy, 2)) # Use cyan-ish color for line
+            for i in range(len(path_points) - 1):
+                painter.drawLine(path_points[i], path_points[i+1])
+        else:
+            # Draw Bar-based Charts (Candlestick, OHLC, Heiken-Ashi)
+            for i in range(len(visible_df)):
+                x_center = self.padding_left + (i + 0.5) * bar_w
+                color = self.color_bull if closes[i] >= opens[i] else self.color_bear
+                painter.setPen(QPen(color, 1))
+                painter.setBrush(color)
                 
-                if st == 'buy':
-                    painter.drawText(QRectF(x_center - 10, y_low + 5, 20, 15), Qt.AlignCenter, str(sc))
-                else:
-                    painter.drawText(QRectF(x_center - 10, y_high - 20, 20, 15), Qt.AlignCenter, str(sc))
+                y_high = price_to_y(highs[i])
+                y_low = price_to_y(lows[i])
+                y_open = price_to_y(opens[i])
+                y_close = price_to_y(closes[i])
 
-            # --- Draw TD Countdown Phase Numbers ---
-            cc = cd_counts[i]
-            ct = cd_types[i]
-            if cc > 0:
-                painter.setFont(self.font_countdown)
-                # Handle deferred 13 (represented internally as 12.5)
-                txt = "13+" if cc == 12.5 else str(int(cc))
-                
-                if ct == 'buy':
-                    painter.setPen(self.color_cd_buy)
-                    painter.drawText(QRectF(x_center - 15, y_low + 20, 30, 20), Qt.AlignCenter, txt)
+                if self.chart_type == "OHLC":
+                    # OHLC Bar
+                    painter.drawLine(QPointF(x_center, y_high), QPointF(x_center, y_low))
+                    painter.drawLine(QPointF(x_center - bar_w * 0.3, y_open), QPointF(x_center, y_open))
+                    painter.drawLine(QPointF(x_center, y_close), QPointF(x_center + bar_w * 0.3, y_close))
                 else:
-                    painter.setPen(self.color_cd_sell)
-                    painter.drawText(QRectF(x_center - 15, y_high - 40, 30, 20), Qt.AlignCenter, txt)
+                    # Candlestick (Default or Heiken-Ashi)
+                    painter.drawLine(QPointF(x_center, y_high), QPointF(x_center, y_low))
+                    body_top = min(y_open, y_close)
+                    body_h = max(1, abs(y_open - y_close))
+                    painter.drawRect(QRectF(x_center - bar_w * 0.35, body_top, bar_w * 0.7, body_h))
+
+        # Separate loop for TD indicators to ensure they are on top
+        if self.show_td_sequential:
+            for i in range(len(visible_df)):
+                x_center = self.padding_left + (i + 0.5) * bar_w
+                # For indicators, we use raw high/low to avoid offset in HA mode
+                y_high_raw = price_to_y(raw_highs[i])
+                y_low_raw = price_to_y(raw_lows[i])
+                
+                # --- Draw TD Setup Phase Numbers ---
+                sc = setup_counts[i]
+                st = setup_types[i]
+                is_perf = perfected[i]
+
+                if sc > 0:
+                    painter.setFont(self.font_labels)
+                    if is_perf:
+                        painter.setPen(self.color_perfected)
+                    elif st == 'buy':
+                        painter.setPen(self.color_setup_buy)
+                    else:
+                        painter.setPen(self.color_setup_sell)
+                    
+                    if st == 'buy':
+                        painter.drawText(QRectF(x_center - 10, y_low_raw + 5, 20, 15), Qt.AlignCenter, str(sc))
+                    else:
+                        painter.drawText(QRectF(x_center - 10, y_high_raw - 20, 20, 15), Qt.AlignCenter, str(sc))
+
+                # --- Draw TD Countdown Phase Numbers ---
+                cc = cd_counts[i]
+                ct = cd_types[i]
+                if cc > 0:
+                    painter.setFont(self.font_countdown)
+                    txt = "13+" if cc == 12.5 else str(int(cc))
+                    
+                    if ct == 'buy':
+                        painter.setPen(self.color_cd_buy)
+                        painter.drawText(QRectF(x_center - 15, y_low_raw + 20, 30, 20), Qt.AlignCenter, txt)
+                    else:
+                        painter.setPen(self.color_cd_sell)
+                        painter.drawText(QRectF(x_center - 15, y_high_raw - 40, 30, 20), Qt.AlignCenter, txt)
 
         # --- 4. Chart Header ---
         painter.setPen(self.color_text_main)
@@ -349,32 +406,33 @@ class CandlestickChart(QWidget):
         painter.drawText(20, 25, title_text)
 
         # --- 5. Legend (Top-Left, below title) ---
-        lx, ly = 20, 35
-        # Draw a semi-transparent background for the legend
-        bg_col = QColor(self.color_widget_bg)
-        bg_col.setAlpha(150)
-        painter.setBrush(bg_col)
-        painter.setPen(Qt.NoPen)
-        painter.drawRect(lx - 5, ly - 5, 450, 25)
-        
-        legend_items = [
-            (self.color_setup_buy, "Buy Setup"),
-            (self.color_setup_sell, "Sell Setup"),
-            (self.color_perfected, "Perfected"),
-            (self.color_cd_buy, "Buy Countdown"),
-            (self.color_cd_sell, "Sell Countdown")
-        ]
-        
-        painter.setFont(self.font_labels)
-        curr_lx = lx
-        for col, txt in legend_items:
+        if self.show_td_sequential:
+            lx, ly = 20, 35
+            # Draw a semi-transparent background for the legend
+            bg_col = QColor(self.color_widget_bg)
+            bg_col.setAlpha(150)
+            painter.setBrush(bg_col)
             painter.setPen(Qt.NoPen)
-            painter.setBrush(col)
-            painter.drawRect(curr_lx, ly + 2, 10, 10)
-            painter.setPen(self.color_text_main)
-            painter.drawText(curr_lx + 15, ly + 11, txt)
-            # Advance X for horizontal legend
-            curr_lx += painter.fontMetrics().horizontalAdvance(txt) + 30
+            painter.drawRect(lx - 5, ly - 5, 450, 25)
+            
+            legend_items = [
+                (self.color_setup_buy, "Buy Setup"),
+                (self.color_setup_sell, "Sell Setup"),
+                (self.color_perfected, "Perfected"),
+                (self.color_cd_buy, "Buy Countdown"),
+                (self.color_cd_sell, "Sell Countdown")
+            ]
+            
+            painter.setFont(self.font_labels)
+            curr_lx = lx
+            for col, txt in legend_items:
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(col)
+                painter.drawRect(curr_lx, ly + 2, 10, 10)
+                painter.setPen(self.color_text_main)
+                painter.drawText(curr_lx + 15, ly + 11, txt)
+                # Advance X for horizontal legend
+                curr_lx += painter.fontMetrics().horizontalAdvance(txt) + 30
 
         # --- 6. Crosshairs (Snap to Bar Center and Close Price) ---
         if self.mouse_point and self.df is not None:
@@ -389,8 +447,9 @@ class CandlestickChart(QWidget):
                 if 0 <= act_idx < len(self.df):
                     # Snap vertical line to bar center
                     snap_x = self.padding_left + (rel_idx + 0.5) * bw
-                    # Snap horizontal line to the bar's Close price
-                    snap_y = price_to_y(self.df['Close'].iloc[act_idx])
+                    # Snap horizontal line to the bar's Close price (or HA_Close)
+                    snap_price = self.df['HA_Close'].iloc[act_idx] if self.chart_type == "Heiken-Ashi" else self.df['Close'].iloc[act_idx]
+                    snap_y = price_to_y(snap_price)
                     
                     cross_pen = QPen(self.color_crosshair, 1, Qt.DashLine)
                     painter.setPen(cross_pen)

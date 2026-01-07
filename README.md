@@ -7,17 +7,17 @@ A high-performance, native Python desktop application for professional technical
 ## Key Features
 
 - **Advanced TD Sequential Logic**: Full implementation including Price Flips, Setup (1-9), Setup Perfection, TDST levels, and Countdown (1-13) with the 13-vs-8 qualifier and deferral (+).
+- **Multi-Chart Type Rendering**:
+    - **Native Candlestick**: High-performance rendering of traditional candles.
+    - **OHLC Bar Chart**: Classic representation of Open, High, Low, and Close data.
+    - **Line Chart**: Minimalist view using closing prices.
+    - **Heiken-Ashi Candles**: Vectorized trend-smoothing visualization.
 - **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
-- **Setup Perfection Visuals**: "Perfected" Setup bars are automatically highlighted in **Magenta** (or theme-specific color) for immediate identification of key price exhaustion points.
-- **Professional Charting Engine**:
-    - **Native Rendering**: High-performance candlestick chart drawn using PySide6 `QPainter`.
-    - **Enriched Metadata**: Chart title now includes Full Name, Exchange, and Currency for each symbol.
-    - **Smart Crosshairs**: Fine dotted lines that automatically snap to the **Close** price and bar center.
-    - **Adaptive Date Axis**: Intelligently labels Years and Months based on zoom level, using contextual formatting to reduce clutter.
-    - **"Nice Number" Price Axis**: Dynamic gridlines that snap to clean mathematical increments (1-2-5 logic) with adaptive decimal precision.
-- **Interactive UI**:
-    - **Smooth Navigation**: Mouse wheel or **Pinch-to-Zoom** (touchscreens) for zooming, and click-drag for panning.
-    - **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, right-justified format.
+- **Interactive UI & Navigation**:
+    - **Side Panel**: Toggleable control panel with indicator settings and chart type selection.
+    - **Adaptive Axis**: Date and Price axes that intelligently scale and format based on zoom levels.
+    - **Advanced Interactions**: Mouse wheel zoom, click-drag panning, and **Pinch-to-Zoom** for touch devices.
+- **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.
 - **Data Integration**: Automatic historical daily data downloads via `yfinance`.
 
 ## Installation
@@ -54,8 +54,10 @@ python3 main.py
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.
 2. Click **Load Chart**.
-3. Use the **Mouse Wheel** to zoom and **Left-Click + Drag** to scroll.
-4. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
+3. Use the **Chart Type** dropdown in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
+4. Toggle **TD Sequential** or adjust its parameters (Lookback, Setup Max, Countdown Max) in the sidebar.
+5. Use the **Mouse Wheel** to zoom and **Left-Click + Drag** to scroll.
+6. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
 
 ## TD Sequential Trading Strategy
 

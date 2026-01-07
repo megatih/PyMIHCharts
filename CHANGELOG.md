@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-01-07
+
+### Added
+- **Multi-Chart Type Support**: Introduced a selection menu in the sidebar to toggle between different chart visualizations.
+- **Chart Styles**:
+    - **OHLC**: Standard Open-High-Low-Close bars.
+    - **Line**: A continuous line connecting Close prices.
+    - **Heiken-Ashi**: Trend-filtering candles with dedicated vectorized calculation.
+- **Vectorized Heiken-Ashi**: Implemented high-performance Heiken-Ashi math in `td_sequential.py` to ensure smooth rendering even with large datasets.
+- **Enhanced Render Logic**: Updated `native_chart.py` to handle different price ranges and rendering paths for each chart type while maintaining TD Sequential indicator visibility.
+
+### Fixed
+- **Data Robustness**: Added automatic NaN removal in `calculate_td_sequential` to prevent calculation errors from incomplete yfinance data.
+- **UI Initialization**: Fixed an `AttributeError` in `main.py` caused by improper initialization order of UI components and signal connections.
+
 ## [1.3.0] - 2026-01-07
 
 ### Added

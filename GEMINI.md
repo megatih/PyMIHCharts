@@ -15,6 +15,8 @@ PyMIHCharts is a high-performance, native Python desktop application for technic
 
 ### `td_sequential.py` (The Model)
 - **Vectorized Calculation**: Uses NumPy arrays to calculate Price Flips, Setups, and Countdowns, ensuring O(n) performance.
+- **Heiken-Ashi Logic**: Implements high-performance vectorized calculation for trend-filtering candles (`HA_Open`, `HA_High`, `HA_Low`, `HA_Close`).
+- **Data Integrity**: Automatically cleans incoming daily data by removing incomplete (NaN) rows before indicator processing.
 - **Strict Adherence**: 
   - Setups (1-9) require consecutive conditions and start with a Price Flip.
   - Countdowns (1-13) are non-sequential and require a matching Setup phase.
@@ -22,28 +24,19 @@ PyMIHCharts is a high-performance, native Python desktop application for technic
   - **Cancellation**: Countdowns are cancelled by opposite Setup 9s or TDST level violations.
 
 ### `native_chart.py` (The View)
-- **Rendering**: Uses a single `paintEvent` with cached GDI objects (Pens, Fonts, Colors) to minimize allocation overhead.
-- **Visuals**:
-  - Highlights **Perfected Setup bars** in Magenta.
-  - Features a **horizontal legend** at the top-left corner below the title.
-  - Dynamically renders an enriched title with Full Name, Exchange, and Currency.
-- **Smart Date Axis**: 
-  - Scans visible data for Month/Year transitions.
-  - Calculates an optimal `month_step` (1, 2, 3, 6) based on pixel density.
-  - Prioritizes Year labels (Bold White) over Month labels (Gray).
-- **Price Axis**: 
-  - Uses **1-2-5 logic** to find "nice" mathematical increments.
-  - Dynamically calculates decimal precision based on the current increment size.
-- **Interaction**:
-  - **Zoom/Pan**: Supports mouse wheel, click-drag, and **Pinch-to-Zoom** gestures for touchscreens.
-  - **Crosshairs**: Snaps horizontal line to `Close` and vertical line to `Bar Center`.
-  - **Hover**: Emits rich-text compatible data for the status bar.
+- **Multi-Path Rendering**: A single `paintEvent` handles dynamic rendering for **Candlesticks**, **OHLC Bars**, **Line Charts**, and **Heiken-Ashi** candles.
+- **Interactive Scaling**: Dynamically adjusts price range and vertical scaling based on the active chart type (e.g., using HA extremes or Closing prices).
+- **Smart Snap Crosshairs**: Snapping logic automatically adapts to the visual chart state, locking to `Close` prices or `HA_Close` values.
+- **Visual Enhancements**:
+  - Highlights **Perfected Setup bars** in theme-aware colors.
+  - Features a **horizontal legend** and an enriched header with asset metadata.
+- **Optimization**: Uses cached GDI objects and avoids high-overhead allocations during redrawn events.
 
 ### `main.py` (The Controller)
-- Manages the top-level layout and styling.
-- Connects the asynchronous-like data loading to the UI.
-- Implements the **HTML-formatted Status Bar** for color-coded data visualization.
-- Handles **Dynamic Theme Switching** via the View menu.
+- **UI Coordination**: Manages a toggleable sidebar containing both Indicator settings (TD Sequential) and Chart Type selection.
+- **Initialization & Safety**: Implements strict initialization order to ensure widgets are fully constructed before signal-slot connections.
+- **Asynchronous Workflow**: Bridges the gap between data fetching (`yfinance`) and UI updates with state-aware feedback (e.g., "Loading..." status).
+- **Theme Management**: Centralizes style application across the entire application and the chart canvas.
 
 ### `themes.py` (Theme Definitions)
 - Centralized dictionary of color schemes (Default, Lilac, Dracula).
