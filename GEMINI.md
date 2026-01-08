@@ -27,10 +27,13 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 ### View Layer (`views/`)
 - **`chart_view.py`**: The core rendering engine.
     - Uses native PySide6 `QPainter` for high-frame-rate interactive drawing.
-    - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
+    - Dynamically calculates margins and axis spacing using cached `QFontMetrics` derived from the system's default font.
 - **`sidebar_view.py`**: Contains control widgets for indicator settings and chart type selection.
+    - Utilizes `QFormLayout` for standardized label-field alignment.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
+    - Implements a unified `QToolBar` (native behavior on macOS).
+    - Uses `QSplitter` for a resizable Chart/Sidebar interface.
 - **`themes.py`**: Centralized repository for UI color schemes.
 
 ### Controller Layer (`controllers/`)

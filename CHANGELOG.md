@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-01-08
+
+### Added
+- **Native Toolbar**: Implemented `QToolBar` with "Unified Title and Toolbar" behavior on macOS for a modern system-integrated look.
+- **Resizable Layout**: Replaced static layouts with `QSplitter`, allowing users to resize the sidebar and chart areas dynamically.
+- **High DPI Support**: Enabled `Qt.HighDpiScaleFactorRoundingPolicy.PassThrough` for crisp rendering on Retina and high-resolution displays.
+
+### Changed
+- **Sidebar Refactor**: Converted sidebar settings to use `QFormLayout` for standardized alignment and adherence to Qt Human Interface Guidelines.
+- **System Fonts**: Updated the custom chart rendering engine to inherit `QApplication.font()` instead of using hardcoded Arial, ensuring visual consistency with the OS.
+- **Dialog Polishing**: Improved margins, spacing, and messaging in the `SymbolSearchDialog`.
+
 ## [1.6.0] - 2026-01-08
 
 ### Added

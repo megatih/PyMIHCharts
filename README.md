@@ -13,8 +13,10 @@ A high-performance, native Python desktop application for professional technical
     - **Line Chart**: Minimalist view using closing prices.
     - **Heiken-Ashi Candles**: Vectorized trend-smoothing visualization.
 - **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
-- **Interactive UI & Navigation**:
-    - **Side Panel**: Toggleable control panel with indicator settings and chart type selection.
+- **Modern Native UI (Qt6)**:
+    - **Unified Toolbar**: Native macOS-style toolbar integration for seamless interaction.
+    - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
+    - **Polished Controls**: Standardized form layouts and native widgets for a professional look and feel.
     - **Adaptive Axis**: Date and Price axes that intelligently scale and format based on zoom levels.
     - **Advanced Interactions**: Mouse wheel zoom, click-drag panning, and **Pinch-to-Zoom** for touch devices.
 - **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.

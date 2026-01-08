@@ -10,7 +10,7 @@ import sys
 import math
 from typing import Optional, Dict, Any, List, Tuple
 
-from PySide6.QtWidgets import QWidget, QPinchGesture, QGestureEvent
+from PySide6.QtWidgets import QWidget, QPinchGesture, QGestureEvent, QApplication
 from PySide6.QtGui import QPainter, QColor, QPen, QFont, QMouseEvent, QWheelEvent, QFontMetrics
 from PySide6.QtCore import Qt, QRectF, QPointF, Signal, QEvent, QSize
 import pandas as pd
@@ -43,9 +43,17 @@ class CandlestickChart(QWidget):
         self.mouse_point: Optional[QPointF] = None
 
         # --- Cached GDI Objects ---
-        self.font_main = QFont("Arial", 11, QFont.Bold)
-        self.font_labels = QFont("Arial", 8)
-        self.font_countdown = QFont("Arial", 10, QFont.Bold)
+        base_font = QApplication.font()
+        self.font_main = QFont(base_font)
+        self.font_main.setPointSize(11)
+        self.font_main.setBold(True)
+        
+        self.font_labels = QFont(base_font)
+        self.font_labels.setPointSize(8)
+        
+        self.font_countdown = QFont(base_font)
+        self.font_countdown.setPointSize(10)
+        self.font_countdown.setBold(True)
         
         self.fm_main = QFontMetrics(self.font_main)
         self.fm_labels = QFontMetrics(self.font_labels)

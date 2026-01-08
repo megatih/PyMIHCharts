@@ -10,7 +10,7 @@ class SymbolSearchDialog(QDialog):
     def __init__(self, parent=None, results=None):
         super().__init__(parent)
         self.setWindowTitle("Symbol Search")
-        self.resize(400, 300)
+        self.resize(500, 350)
         self.selected_symbol = None
         self.results = results or []
         
@@ -18,11 +18,17 @@ class SymbolSearchDialog(QDialog):
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
         
-        layout.addWidget(QLabel("Symbol not found. Did you mean one of these?"))
+        message = QLabel("The symbol was not found. Please select one of the following suggestions:")
+        message.setWordWrap(True)
+        layout.addWidget(message)
         
         self.list_widget = QListWidget()
         self.list_widget.itemDoubleClicked.connect(self.accept)
+        # Set a bit more padding for items
+        self.list_widget.setStyleSheet("QListWidget::item { padding: 8px; }")
         layout.addWidget(self.list_widget)
         
         for item in self.results:
@@ -51,6 +57,4 @@ class SymbolSearchDialog(QDialog):
             self.selected_symbol = current_item.data(Qt.UserRole)
             super().accept()
         else:
-            # If nothing selected but OK clicked, maybe just close?
-            # Or enforce selection? Let's treat as cancel if nothing selected.
             super().reject()

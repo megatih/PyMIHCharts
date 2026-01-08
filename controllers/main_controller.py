@@ -101,7 +101,7 @@ class MainController(QObject):
         if "No data found" in message and hasattr(self, 'last_symbol'):
             # Trigger search
             self.view.set_loading_state(True)
-            self.view.load_button.setText("Searching...")
+            self.view.load_action.setText("Searching...")
             self.model.search_symbol(self.last_symbol)
             return
 
@@ -143,6 +143,7 @@ class MainController(QObject):
         """Toggles visibility of the settings panel."""
         is_visible = self.view.sidebar.isVisible()
         self.view.sidebar.setVisible(not is_visible)
+        self.view.toggle_action.setChecked(not is_visible)
 
     def update_status_bar(self, data: Optional[Dict[str, Any]]):
         """Formats and displays OHLC data in the status bar."""

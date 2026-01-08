@@ -3,8 +3,9 @@ Main window view component for PyMIHCharts.
 """
 
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, 
-                             QWidget, QLineEdit, QPushButton, QLabel, QSizePolicy)
-from PySide6.QtCore import Qt, Signal
+                             QWidget, QLineEdit, QSplitter, QStatusBar, QToolBar, QSizePolicy)
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtCore import Qt, Signal, QSize
 from views.chart_view import CandlestickChart
 from views.sidebar_view import SidebarView
 from views.themes import THEMES
@@ -20,60 +21,88 @@ class MainView(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PyMIHCharts - Native TD Sequential")
+        self.setWindowTitle("PyMIHCharts")
+        # Let the OS/WindowManager decide initial size or placement usually, 
+        # but a reasonable default is fine.
         self.resize(1200, 800)
+        
+        # Native Mac Toolbar behavior
+        self.setUnifiedTitleAndToolBarOnMac(True)
         
         self._init_ui()
         self._init_menu()
 
     def _init_ui(self):
-        self.main_widget = QWidget()
-        self.setCentralWidget(self.main_widget)
-        self.main_layout = QVBoxLayout(self.main_widget)
+        # --- Toolbar ---
+        self.toolbar = QToolBar("Main Toolbar")
+        self.toolbar.setMovable(False)
+        self.toolbar.setFloatable(False)
+        self.toolbar.setIconSize(QSize(16, 16))
+        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
 
-        # Header Container
-        self.header_widget = QWidget()
-        self.header_layout = QHBoxLayout(self.header_widget)
+        # Toggle Action
+        # Using a standard looking icon or text. 
+        # Since we don't have assets, we'll stick to text but in a proper Action.
+        self.toggle_action = QAction("Sidebar", self)
+        self.toggle_action.setCheckable(True)
+        self.toggle_action.setChecked(True)
+        self.toggle_action.setToolTip("Toggle Settings Panel")
+        self.toggle_action.triggered.connect(self.sidebar_toggled.emit)
+        self.toolbar.addAction(self.toggle_action)
         
-        self.sidebar_toggle_btn = QPushButton("☰")
-        self.sidebar_toggle_btn.setToolTip("Toggle Side Panel")
-        self.sidebar_toggle_btn.clicked.connect(self.sidebar_toggled.emit)
-        
+        self.toolbar.addSeparator()
+
+        # Spacer
+        spacer_left = QWidget()
+        spacer_left.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.toolbar.addWidget(spacer_left)
+
+        # Ticker Input
         self.symbol_input = QLineEdit()
-        self.symbol_input.setPlaceholderText("Enter Ticker (e.g., AAPL, BTC-USD)")
+        self.symbol_input.setPlaceholderText("Ticker (e.g. AAPL)")
         self.symbol_input.setText("AAPL")
+        self.symbol_input.setFixedWidth(150)
         self.symbol_input.returnPressed.connect(self._on_load_clicked)
+        self.toolbar.addWidget(self.symbol_input)
         
-        self.load_button = QPushButton("Load Chart")
-        self.load_button.clicked.connect(self._on_load_clicked)
-        
-        self.header_layout.addWidget(self.sidebar_toggle_btn)
-        self.header_layout.addWidget(QLabel("Ticker:"))
-        self.header_layout.addWidget(self.symbol_input)
-        self.header_layout.addWidget(self.load_button)
-        self.main_layout.addWidget(self.header_widget)
+        # Load Action
+        self.load_action = QAction("Load", self)
+        self.load_action.triggered.connect(self._on_load_clicked)
+        self.toolbar.addAction(self.load_action)
 
-        # Content Container (Sidebar + Chart)
-        self.content_area = QWidget()
-        self.content_layout = QHBoxLayout(self.content_area)
+        # Spacer
+        spacer_right = QWidget()
+        spacer_right.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.toolbar.addWidget(spacer_right)
+
+        # --- Central Area (Splitter) ---
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.setCentralWidget(self.splitter)
 
         self.sidebar = SidebarView()
         self.chart = CandlestickChart()
-        self.chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-        self.content_layout.addWidget(self.sidebar)
-        self.content_layout.addWidget(self.chart)
+        self.splitter.addWidget(self.sidebar)
+        self.splitter.addWidget(self.chart)
         
-        # Priority to the chart
-        self.content_layout.setStretchFactor(self.sidebar, 0)
-        self.content_layout.setStretchFactor(self.chart, 1)
+        # Set stretch factors: Sidebar (0) fixed/preferred, Chart (1) expanding
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
         
-        self.main_layout.addWidget(self.content_area, stretch=1)
+        # Initialize sidebar visibility
+        self.sidebar.setVisible(True)
 
-        # Status Bar Container
-        self.status_label = QLabel("Hover over chart to see price data")
-        self.status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.main_layout.addWidget(self.status_label)
+        # --- Status Bar ---
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_label = QLineEdit() # Using read-only line edit or label? Label is better for status.
+        # Actually QStatusBar has its own message method, but for persistent OHLC data, adding a permanent widget is standard.
+        # However, a simple label is easiest.
+        from PySide6.QtWidgets import QLabel
+        self.status_lbl_widget = QLabel("Ready")
+        self.status_lbl_widget.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.status_lbl_widget.setStyleSheet("padding: 0 10px;")
+        self.status_bar.addPermanentWidget(self.status_lbl_widget, 1)
 
     def _on_load_clicked(self):
         """Helper to emit load request with current input text."""
@@ -82,6 +111,11 @@ class MainView(QMainWindow):
     def _init_menu(self):
         self.menu_bar = self.menuBar()
         self.view_menu = self.menu_bar.addMenu("View")
+        
+        # Add Sidebar toggle to View menu as well
+        self.view_menu.addAction(self.toggle_action)
+        self.view_menu.addSeparator()
+        
         self.theme_menu = self.view_menu.addMenu("Color Scheme")
         
         for theme_name in THEMES.keys():
@@ -89,34 +123,32 @@ class MainView(QMainWindow):
             action.triggered.connect(lambda checked=False, name=theme_name: self.theme_requested.emit(name))
 
     def update_status_bar(self, html_text: str):
-        self.status_label.setText(html_text)
+        # We use a permanent widget for OHLC data to avoid it being cleared by temporary messages
+        self.status_lbl_widget.setText(html_text)
 
     def set_loading_state(self, is_loading: bool):
-        self.load_button.setEnabled(not is_loading)
-        self.load_button.setText("Loading..." if is_loading else "Load Chart")
+        self.load_action.setEnabled(not is_loading)
+        self.symbol_input.setEnabled(not is_loading)
+        self.load_action.setText("Loading..." if is_loading else "Load")
+        if is_loading:
+            self.status_bar.showMessage("Downloading data...", 0)
+        else:
+            self.status_bar.clearMessage()
 
     def apply_theme_styles(self, theme: dict):
+        # Apply theme primarily to the window background and specific components
+        # We avoid over-styling standard widgets to keep native look where possible,
+        # but since 'theme' dictates colors, we apply them to the Palette if we were using QPalette.
+        # For this refactor, we stick to minimal stylesheet application on the container level.
+        
         self.setStyleSheet(f"QMainWindow {{ background-color: {theme['window_bg']}; color: {theme['text_main']}; }}")
         
-        self.sidebar_toggle_btn.setStyleSheet(
-            f"QPushButton {{ background-color: {theme['button_bg']}; color: {theme['text_main']}; border: none; font-size: 18px; }} "
-            f"QPushButton:hover {{ background-color: {theme['button_hover']}; }}"
+        # Status Bar styling
+        self.status_bar.setStyleSheet(
+            f"QStatusBar {{ background-color: {theme['status_bg']}; color: {theme['status_text']}; }}"
         )
+        self.status_lbl_widget.setStyleSheet(f"color: {theme['status_text']};")
 
-        self.symbol_input.setStyleSheet(
-            f"background-color: {theme['widget_bg']}; color: {theme['text_main']}; "
-            f"border: 1px solid {theme['grid']}; padding: 5px;"
-        )
-        
-        self.load_button.setStyleSheet(
-            f"QPushButton {{ background-color: {theme['button_bg']}; color: {theme['text_main']}; padding: 5px 15px; border: none; }} "
-            f"QPushButton:hover {{ background-color: {theme['button_hover']}; }}"
-        )
-        
-        self.status_label.setStyleSheet(
-            f"background-color: {theme['status_bg']}; color: {theme['status_text']}; padding: 2px 10px; "
-            "font-family: monospace; border-top: 1px solid #333;"
-        )
-        
+        # Pass theme to sub-views
         self.sidebar.apply_theme_styles(theme)
         self.chart.apply_theme(theme)
