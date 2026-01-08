@@ -18,7 +18,8 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 ### Model Layer (`models/`)
 - **`data_manager.py`**: Manages data state and coordinates asynchronous processing.
     - **`DataWorker`**: A `QObject` designed to run in a separate `QThread`. It handles ticker downloads and heavy technical indicator math.
-    - **`DataManager`**: Controls worker lifecycles and emits signals (`data_ready`, `loading_error`) to the Controller.
+    - **`SearchWorker`**: A `QObject` designed to run in a separate `QThread`. It utilizes `yfinance`'s search feature to find symbols when a direct lookup fails.
+    - **`DataManager`**: Controls worker lifecycles and emits signals (`data_ready`, `loading_error`, `search_results`) to the Controller.
 - **`indicators.py`**: Contains the core technical analysis logic.
     - **TD Sequential**: Vectorized calculation of Price Flips, Setups, and Countdowns.
     - **Heiken-Ashi**: Vectorized trend-filtering candle calculations.
@@ -28,6 +29,7 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - Uses native PySide6 `QPainter` for high-frame-rate interactive drawing.
     - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
 - **`sidebar_view.py`**: Contains control widgets for indicator settings and chart type selection.
+- **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
 - **`themes.py`**: Centralized repository for UI color schemes.
 

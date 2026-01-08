@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-01-08
+
+### Added
+- **Smart Symbol Search**: Implemented a fallback mechanism where entering an invalid symbol triggers a search via `yfinance`.
+- **Search Dialog**: Created a dedicated `SymbolSearchDialog` to present matching symbols, companies, and exchange details to the user for selection.
+- **Search Architecture**: Added `SearchWorker` in `models/data_manager.py` to handle search queries asynchronously without blocking the UI.
+
+### Changed
+- **Error Handling**: Enhanced the "No data found" error flow to automatically initiate a search instead of just displaying an error message.
+- **Font Rendering**: Switched the default application font to "sans-serif" to prevent "missing font family" warnings on macOS.
+
+### Fixed
+- **NameError Regression**: Fixed a `NameError` in `models/data_manager.py` caused by a missing pandas import.
+- **Class Definition**: Restored the `DataWorker` class which was accidentally removed during the search feature implementation.
+
 ## [1.5.0] - 2026-01-07
 
 ### Added

@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt, QObject, Slot
 from models.data_manager import DataManager
 from models.indicators import calculate_td_sequential
 from views.main_view import MainView
+from views.search_dialog import SymbolSearchDialog
 from views.themes import THEMES
 
 
@@ -46,6 +47,7 @@ class MainController(QObject):
         # Model -> Controller
         self.model.data_ready.connect(self._on_data_ready)
         self.model.loading_error.connect(self._on_loading_error)
+        self.model.search_results.connect(self._on_search_results)
 
     @Slot(str)
     def load_data(self, symbol: str):
@@ -54,6 +56,7 @@ class MainController(QObject):
         if not symbol:
             return
 
+        self.last_symbol = symbol
         self.view.set_loading_state(True)
         
         settings = {
@@ -93,7 +96,27 @@ class MainController(QObject):
     def _on_loading_error(self, message):
         """Callback for when threaded loading fails."""
         self.view.set_loading_state(False)
+        
+        # Check if it's a "not found" error and try to search
+        if "No data found" in message and hasattr(self, 'last_symbol'):
+            # Trigger search
+            self.view.set_loading_state(True)
+            self.view.load_button.setText("Searching...")
+            self.model.search_symbol(self.last_symbol)
+            return
+
         QMessageBox.critical(self.view, "Error", message)
+
+    def _on_search_results(self, results):
+        self.view.set_loading_state(False)
+        if not results:
+             QMessageBox.critical(self.view, "Error", f"Symbol '{self.last_symbol}' not found and no similar symbols found.")
+             return
+             
+        dialog = SymbolSearchDialog(self.view, results)
+        if dialog.exec():
+            self.view.symbol_input.setText(dialog.selected_symbol)
+            self.load_data(dialog.selected_symbol)
 
     def _update_view_with_data(self, df, metadata):
         """Helper to push data to the view."""

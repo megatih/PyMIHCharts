@@ -55,12 +55,35 @@ class DataWorker(QObject):
             self.error.emit(str(e))
 
 
+class SearchWorker(QObject):
+    """
+    Worker to handle symbol search in a separate thread.
+    """
+    results_ready = Signal(list)
+    error = Signal(str)
+
+    def __init__(self, query: str):
+        super().__init__()
+        self.query = query
+
+    def run(self):
+        """Executes the search query using yfinance."""
+        try:
+            search = yf.Search(self.query, news_count=0)
+            # Accessing .quotes triggers the actual request
+            quotes = search.quotes
+            self.results_ready.emit(quotes)
+        except Exception as e:
+            self.error.emit(str(e))
+
+
 class DataManager(QObject):
     """
     Manages data states and coordinates threading for data operations.
     """
     data_ready = Signal(pd.DataFrame, dict)
     loading_error = Signal(str)
+    search_results = Signal(list)
 
     def __init__(self):
         super().__init__()
@@ -68,6 +91,8 @@ class DataManager(QObject):
         self.metadata: Dict[str, str] = {}
         self._thread: Optional[QThread] = None
         self._worker: Optional[DataWorker] = None
+        self._search_thread: Optional[QThread] = None
+        self._search_worker: Optional[SearchWorker] = None
 
     def request_data(self, symbol: str, settings: dict):
         """Starts a new thread to fetch and process data."""
@@ -88,6 +113,24 @@ class DataManager(QObject):
         self._worker.error.connect(self._thread.quit)
         
         self._thread.start()
+
+    def search_symbol(self, query: str):
+        """Starts a new thread to search for symbols."""
+        if self._search_thread and self._search_thread.isRunning():
+            self._search_thread.quit()
+            self._search_thread.wait()
+
+        self._search_thread = QThread()
+        self._search_worker = SearchWorker(query)
+        self._search_worker.moveToThread(self._search_thread)
+        
+        self._search_thread.started.connect(self._search_worker.run)
+        self._search_worker.results_ready.connect(self.search_results.emit)
+        # On error, we might just emit an empty list or log it, but for now let's just clean up
+        self._search_worker.results_ready.connect(self._search_thread.quit)
+        self._search_worker.error.connect(self._search_thread.quit)
+        
+        self._search_thread.start()
 
     def _handle_finished(self, df, metadata):
         self.raw_df = df

@@ -16,7 +16,7 @@ def main():
     Initializes and starts the application using the MVC pattern.
     """
     app = QApplication(sys.argv)
-    app.setFont(QFont("Segoe UI", 9))
+    app.setFont(QFont("sans-serif", 9))
     
     # Initialize MVC components
     model = DataManager()
