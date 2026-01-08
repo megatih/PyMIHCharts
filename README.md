@@ -6,25 +6,25 @@ A high-performance, native Python desktop application for professional technical
 
 ## Key Features
 
-- **Advanced TD Sequential Logic**: Full implementation including Price Flips, Setup (1-9), Setup Perfection, TDST levels, and Countdown (1-13) with the 13-vs-8 qualifier and deferral (+).
-- **Bollinger Bands**: High-performance implementation of volatility bands with:
-    - Custom periods and Moving Average types (SMA/EMA).
-    - Support for multiple concurrent Standard Deviation bands (1σ, 2σ, 3σ).
-- **Multi-Chart Type Rendering**:
-    - **Native Candlestick**: High-performance rendering of traditional candles.
-    - **OHLC Bar Chart**: Classic representation of Open, High, Low, and Close data.
-    - **Line Chart**: Minimalist view using closing prices.
-    - **Heiken-Ashi Candles**: Vectorized trend-smoothing visualization.
-- **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
 - **Modern Native UI (Qt6)**:
     - **Unified Toolbar**: Native macOS-style toolbar integration for seamless interaction.
     - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
     - **Polished Controls**: Standardized form layouts and native widgets for a professional look and feel.
     - **Adaptive Axis**: Date and Price axes that intelligently scale and format based on zoom levels.
     - **Advanced Interactions**: Mouse wheel zoom, click-drag panning, and **Pinch-to-Zoom** for touch devices.
-- **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.
-- **Smart Symbol Search**: If a ticker symbol is not found, the app automatically queries `yfinance` for matches and presents a selection dialog, ensuring users always find the right asset.
 - **Data Integration**: Automatic historical daily data downloads via `yfinance`.
+- **Smart Symbol Search**: If a ticker symbol is not found, the app automatically queries `yfinance` for matches and presents a selection dialog, ensuring users always find the right asset.
+- **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.
+- **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
+- **Multi-Chart Type Rendering**:
+    - **Native Candlestick**: High-performance rendering of traditional candles.
+    - **OHLC Bar Chart**: Classic representation of Open, High, Low, and Close data.
+    - **Line Chart**: Minimalist view using closing prices.
+    - **Heiken-Ashi Candles**: Vectorized trend-smoothing visualization.
+- **Bollinger Bands**: High-performance implementation of volatility bands with:
+    - Custom periods and Moving Average types (SMA/EMA).
+    - Support for multiple concurrent Standard Deviation bands (1σ, 2σ, 3σ).
+- **Advanced TD Sequential Logic**: Full implementation including Price Flips, Setup (1-9), Setup Perfection, TDST levels, and Countdown (1-13) with the 13-vs-8 qualifier and deferral (+).
 
 ## Installation
 
@@ -69,7 +69,7 @@ PyMIHCharts is built using a professional **Model-View-Controller (MVC)** archit
 2. Click **Load Chart**.
 3. Use the **Chart Type** dropdown in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
 4. Toggle **TD Sequential** or **Bollinger Bands** and adjust their parameters in the sidebar.
-5. Use the **Mouse Wheel** to zoom and **Left-Click + Drag** to scroll.
+5. Use the **Mouse Wheel** to zoom (or **Pinch-to-Zoom** if a touchscreen is available) and **Left-Click + Drag** to scroll.
 6. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
 
 ## TD Sequential Trading Strategy
@@ -91,6 +91,25 @@ TD Sequential is designed to identify price exhaustion points and potential reve
 - **Goal**: Identifies longer-term trend exhaustion (major top or bottom).
 - **Signal**: A completed **13 Countdown** indicates the trend has likely depleted its momentum.
 - **Qualifier**: This app enforces the "13 vs 8" qualifier (Close of bar 13 must be better than Close of bar 8) and displays a "13+" (deferred) if the condition isn't met yet.
+
+## Bollinger Bands Trading Strategy
+
+Bollinger Bands are a volatility-based tool developed by John Bollinger to identify overbought/oversold conditions and trend strength.
+
+### 1. The Squeeze (Volatility)
+- **Goal**: Identifies periods of low volatility as precursors to major price moves.
+- **Signal**: When the upper and lower bands constrict (the "Squeeze"), it indicates that volatility is unusually low. This typically leads to a "Volatility Breakout."
+- **Usage**: Traders wait for a price break above or below the bands following a squeeze to enter a trade in the direction of the breakout.
+
+### 2. Walking the Bands (Trend)
+- **Goal**: Identifies strong trending momentum.
+- **Signal**: In a strong trend, price will often "walk" along the upper band (uptrend) or lower band (downtrend).
+- **Usage**: Touching the bands is not a signal by itself; rather, continued closes outside or near the bands suggest trend strength. A move back toward the middle band (Moving Average) might indicate a temporary pullback or trend exhaustion.
+
+### 3. W-Bottoms and M-Tops (Reversals)
+- **Goal**: Identifies high-probability reversal patterns.
+- **W-Bottom**: Occurs when price makes a low outside the lower band, followed by a bounce, and then a second low *inside* the lower band. This "higher low" relative to the bands suggests a bullish reversal.
+- **M-Top**: Occurs when price makes a high outside the upper band, followed by a pullback, and then a second high *inside* the upper band. This suggests momentum is fading despite the high price, indicating a bearish reversal.
 
 ## License
 Parity Public License 7.0.0 (See LICENSE.md for details)
