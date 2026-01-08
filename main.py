@@ -7,7 +7,6 @@ Model-View-Controller (MVC) components, and enters the main event loop.
 
 import sys
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
 from models.data_manager import DataManager
@@ -29,9 +28,6 @@ def main():
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     
     app = QApplication(sys.argv)
-    
-    # Use a standard sans-serif font across the UI
-    app.setFont(QFont("sans-serif", 9))
     
     # --- MVC Initialization ---
     

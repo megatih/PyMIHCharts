@@ -46,7 +46,6 @@ class SidebarView(QFrame):
         lbl_chart = QLabel("CHART TYPE")
         font = lbl_chart.font()
         font.setBold(True)
-        font.setPointSize(10)
         lbl_chart.setFont(font)
         
         self.chart_type_combo = QComboBox()

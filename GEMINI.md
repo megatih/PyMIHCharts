@@ -28,7 +28,8 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 ### View Layer (`views/`)
 - **`chart_view.py`**: The core rendering engine.
     - Uses native PySide6 `QPainter` for high-frame-rate interactive drawing.
-    - Dynamically calculates margins and axis spacing using cached `QFontMetrics` derived from the system's default font.
+    - Implements a relative font architecture where all UI elements (headers, axis labels, indicators) scale dynamically based on `QApplication.font()`.
+    - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
 - **`sidebar_view.py`**: Contains control widgets for indicator settings and chart type selection.
     - Utilizes `QFormLayout` for standardized label-field alignment.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.

@@ -54,15 +54,28 @@ class CandlestickChart(QWidget):
         # --- Cached GDI / Font Objects ---
         # Initializing these here avoids repeated lookups during paintEvent
         base_font = QApplication.font()
+        base_size = base_font.pointSize()
+        if base_size <= 0: base_size = 13  # Fallback for systems using pixel sizes
+        
         self.font_main = QFont(base_font)
-        self.font_main.setPointSize(11)
+        self.font_main.setPointSize(base_size + 2)
         self.font_main.setBold(True)
         
+        # Axis and legend labels (Increased for better legibility)
         self.font_labels = QFont(base_font)
-        self.font_labels.setPointSize(8)
+        self.font_labels.setPointSize(base_size - 3)
         
+        self.font_year = QFont(base_font)
+        self.font_year.setPointSize(base_size - 3)
+        self.font_year.setBold(True)
+        
+        # TD Sequential Setup numbers (Keeping at 8pt)
+        self.font_td_setup = QFont(base_font)
+        self.font_td_setup.setPointSize(base_size - 5)
+        
+        # TD Sequential Countdown numbers (Keeping at 10pt)
         self.font_countdown = QFont(base_font)
-        self.font_countdown.setPointSize(10)
+        self.font_countdown.setPointSize(base_size - 3)
         self.font_countdown.setBold(True)
         
         self.fm_main = QFontMetrics(self.font_main)
@@ -308,7 +321,7 @@ class CandlestickChart(QWidget):
                 painter.setPen(self.pen_grid)
                 painter.drawLine(int(x), self.padding_top, int(x), self.height() - self.padding_bottom)
                 painter.setPen(self.color_text_main if trans['is_year'] else self.color_text_label)
-                painter.setFont(QFont("Arial", 8, QFont.Bold) if trans['is_year'] else self.font_labels)
+                painter.setFont(self.font_year if trans['is_year'] else self.font_labels)
                 painter.drawText(int(x - 15), int(self.height() - self.padding_bottom + 15), d.strftime('%Y' if trans['is_year'] else '%b'))
 
     def _draw_bollinger_bands(self, painter: QPainter, visible_df: pd.DataFrame, min_p: float, p_range: float):
@@ -395,7 +408,7 @@ class CandlestickChart(QWidget):
             
             # Setup numbers (1-9)
             if scs[i] > 0:
-                painter.setFont(self.font_labels)
+                painter.setFont(self.font_td_setup)
                 painter.setPen(self.color_perfected if perfs[i] else (self.color_setup_buy if sts[i] == 'buy' else self.color_setup_sell))
                 painter.drawText(QRectF(x - 10, (ylr + 5 if sts[i] == 'buy' else yhr - 20), 20, 15), Qt.AlignCenter, str(scs[i]))
             

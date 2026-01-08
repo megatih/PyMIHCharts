@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-01-08
+
+### Changed
+- **System Font Integration**: Removed all hardcoded font families (like "Arial" and "sans-serif") to strictly adhere to OS-level typography settings.
+- **Dynamic Font Hierarchy**: Implemented a fully relative font sizing system based on the system's default `QApplication.font()`:
+    - **Main Header**: Scaled to `base + 2` for better visual prominence.
+    - **Sidebar Headers**: Normalized to `base` (Bold) to match UI standards.
+    - **Axis & Legend Labels**: Optimized to `base - 3` for improved legibility on high-DPI screens.
+- **Indicator Precision**: Refined internal font caching in `CandlestickChart` to separate axis labels from technical indicator numbers, ensuring that TD Sequential markers remain at their specialized compact sizes (8pt and 10pt) while the rest of the UI scales.
+
 ## [1.8.0] - 2026-01-08
 
 ### Added
