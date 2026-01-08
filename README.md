@@ -1,6 +1,6 @@
 # PyMIHCharts
 
-A high-performance, native Python desktop application for professional technical analysis using Tom DeMark's **TD Sequential** indicator.
+A high-performance, native Python desktop application for professional technical analysis. While originally focused on TD Sequential, PyMIHCharts is evolving into a comprehensive charting suite with a growing library of technical indicators.
 
 ![PyMIHCharts Screenshot](PyMIHCharts_Screenshot.png)
 

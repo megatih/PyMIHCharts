@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.8.0] - 2026-01-08
 
 ### Added
+- **Project Evolution**: Officially expanded the project scope from a single-indicator tool to a general-purpose technical analysis platform. More indicators will be added in subsequent releases.
 - **Bollinger Bands Indicator**: Implemented a new technical indicator with customizable parameters:
     - Period adjustment (default 20).
     - Moving Average type selection (SMA or EMA).
@@ -125,11 +126,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **Import Error**: Fixed a `NameError` in `main.py` where `QFont` was not imported.
-- **Initial Release of PyMIHCharts**: A high-performance, native desktop application for professional technical analysis.
-- **Advanced TD Sequential Implementation**:
-    - Full implementation of Tom DeMark's TD Sequential logic (Setup 1-9, Countdown 1-13).
-    - Includes Price Flip triggers, Setup Perfection checks, and TDST (Setup Trend) resistance/support levels.
-    - Implemented the **13-vs-8 qualifier** for Countdowns with support for **Deferral ("13+")** logic.
+- **Initial Release of PyMIHCharts**: A high-performance, native desktop application for professional technical analysis, featuring a robust initial implementation of Tom DeMark's TD Sequential logic.
 - **Professional Native Charting Engine**:
     - High-performance rendering using PySide6 `QPainter`, bypassing the need for heavy web engines.
     - **Smart Snapping Crosshairs**: Interactive dotted lines that automatically snap to the Close price and Bar Center.

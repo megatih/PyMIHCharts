@@ -1,10 +1,10 @@
 # PyMIHCharts - Developer Context
 
-PyMIHCharts is a high-performance, native Python desktop application for technical analysis, specifically implementing Tom DeMark's **TD Sequential** indicator. It features a custom-built rendering engine for interactive candlestick charting using native Qt technologies.
+PyMIHCharts is a high-performance, native Python desktop application for professional technical analysis. It features a custom-built rendering engine for interactive candlestick charting using native Qt technologies and provides a modular framework for implementing various technical indicators.
 
 ## Project Overview
 
-- **Purpose**: To provide traders with a fast, interactive tool for downloading historical stock data and visualizing TD Sequential patterns.
+- **Purpose**: To provide traders with a fast, interactive tool for downloading historical stock data and visualizing technical patterns (starting with TD Sequential and Bollinger Bands). The project aims to continuously expand its indicator library in future versions.
 - **Main Technologies**:
   - **Python 3**: Core language.
   - **PySide6 (Qt for Python)**: Native GUI, high-performance `QPainter` rendering, and `QThread` async management.
