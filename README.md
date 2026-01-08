@@ -111,5 +111,12 @@ Bollinger Bands are a volatility-based tool developed by John Bollinger to ident
 - **W-Bottom**: Occurs when price makes a low outside the lower band, followed by a bounce, and then a second low *inside* the lower band. This "higher low" relative to the bands suggests a bullish reversal.
 - **M-Top**: Occurs when price makes a high outside the upper band, followed by a pullback, and then a second high *inside* the upper band. This suggests momentum is fading despite the high price, indicating a bearish reversal.
 
+## Disclaimer
+
+This software is for **educational and informational purposes only**. It does not constitute financial, investment, or trading advice. Technical analysis indicators are based on historical data and do not guarantee future results. 
+
+The authors and contributors of PyMIHCharts are not responsible for any financial losses or damages incurred through the use of this application. Users should perform their own due diligence and consult with a certified financial advisor before making any investment decisions. **Trading involves significant risk.**
+
 ## License
-Parity Public License 7.0.0 (See LICENSE.md for details)
+
+This project is licensed under the [Parity Public License 7.0.0](LICENSE.md).
