@@ -22,6 +22,7 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - **`DataManager`**: Controls worker lifecycles and emits signals (`data_ready`, `loading_error`, `search_results`) to the Controller.
 - **`indicators.py`**: Contains the core technical analysis logic.
     - **TD Sequential**: Vectorized calculation of Price Flips, Setups, and Countdowns.
+    - **Bollinger Bands**: Vectorized SMA/EMA and Standard Deviation calculations.
     - **Heiken-Ashi**: Vectorized trend-filtering candle calculations.
 
 ### View Layer (`views/`)

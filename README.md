@@ -7,6 +7,9 @@ A high-performance, native Python desktop application for professional technical
 ## Key Features
 
 - **Advanced TD Sequential Logic**: Full implementation including Price Flips, Setup (1-9), Setup Perfection, TDST levels, and Countdown (1-13) with the 13-vs-8 qualifier and deferral (+).
+- **Bollinger Bands**: High-performance implementation of volatility bands with:
+    - Custom periods and Moving Average types (SMA/EMA).
+    - Support for multiple concurrent Standard Deviation bands (1σ, 2σ, 3σ).
 - **Multi-Chart Type Rendering**:
     - **Native Candlestick**: High-performance rendering of traditional candles.
     - **OHLC Bar Chart**: Classic representation of Open, High, Low, and Close data.
@@ -65,7 +68,7 @@ PyMIHCharts is built using a professional **Model-View-Controller (MVC)** archit
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.
 2. Click **Load Chart**.
 3. Use the **Chart Type** dropdown in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
-4. Toggle **TD Sequential** or adjust its parameters (Lookback, Setup Max, Countdown Max) in the sidebar.
+4. Toggle **TD Sequential** or **Bollinger Bands** and adjust their parameters in the sidebar.
 5. Use the **Mouse Wheel** to zoom and **Left-Click + Drag** to scroll.
 6. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
 

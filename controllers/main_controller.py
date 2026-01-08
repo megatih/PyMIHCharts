@@ -1,14 +1,17 @@
 """
 Main controller coordinating Model and View with async support.
+
+This class implements the 'Controller' in the MVC pattern, handling
+user interactions from the View and requesting data/processing from the Model.
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QApplication
 from PySide6.QtCore import Qt, QObject, Slot
 
 from models.data_manager import DataManager
-from models.indicators import calculate_td_sequential
+from models.indicators import calculate_indicators
 from views.main_view import MainView
 from views.search_dialog import SymbolSearchDialog
 from views.themes import THEMES
@@ -16,42 +19,63 @@ from views.themes import THEMES
 
 class MainController(QObject):
     """
-    Controller that connects the DataManager (Model) with the MainView (View).
+    Orchestrator for the PyMIHCharts application.
+    
+    Responsibilities:
+    - Bridge View signals to Model requests.
+    - Synchronize UI state (toggles, settings) with the rendering engine.
+    - Manage asynchronous data loading and search workflows.
     """
 
     def __init__(self, model: DataManager, view: MainView):
+        """
+        Initializes the controller and sets up signal-slot connections.
+        
+        Args:
+            model: The DataManager instance.
+            view: The MainView (top-level window) instance.
+        """
         super().__init__()
         self.model = model
         self.view = view
+        self.last_symbol: Optional[str] = None
+        
         self._setup_connections()
         
-        # Initial State
+        # Initial Application State
         self.change_theme("Default")
-        self.load_data("AAPL")
+        self.load_data("AAPL") # Load Apple as the default ticker
 
     def _setup_connections(self):
         """Wires up view signals to controller slots."""
-        # View -> Controller
+        
+        # --- View -> Controller ---
         self.view.load_requested.connect(self.load_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
         self.view.theme_requested.connect(self.change_theme)
         
-        # Sidebar specific connections
+        # --- Sidebar Controls -> Controller ---
         self.view.sidebar.chart_type_changed.connect(self.view.chart.set_chart_type)
         self.view.sidebar.td_toggle_changed.connect(self.on_td_toggle)
+        self.view.sidebar.bb_toggle_changed.connect(self.on_bb_toggle)
         self.view.sidebar.setting_changed.connect(self.refresh_chart)
         
-        # Chart specific connections
+        # --- Chart Interactions -> Controller ---
         self.view.chart.hovered_data_changed.connect(self.update_status_bar)
 
-        # Model -> Controller
+        # --- Model -> Controller (Background Thread Callbacks) ---
         self.model.data_ready.connect(self._on_data_ready)
         self.model.loading_error.connect(self._on_loading_error)
         self.model.search_results.connect(self._on_search_results)
 
     @Slot(str)
     def load_data(self, symbol: str):
-        """Requests data from the model."""
+        """
+        Initiates a new data fetch for the given ticker.
+        
+        Args:
+            symbol: Ticker symbol string.
+        """
         symbol = symbol.upper().strip()
         if not symbol:
             return
@@ -59,67 +83,98 @@ class MainController(QObject):
         self.last_symbol = symbol
         self.view.set_loading_state(True)
         
-        settings = {
-            'lookback': self.view.sidebar.lookback_spin.value(),
-            'setup_max': self.view.sidebar.setup_spin.value(),
-            'countdown_max': self.view.sidebar.countdown_spin.value()
-        }
-        
+        # Capture current sidebar settings to pass to the background calculation
+        settings = self._get_current_settings()
         self.model.request_data(symbol, settings)
 
+    def _get_current_settings(self) -> Dict[str, Any]:
+        """
+        Extracts all indicator parameters from UI widgets.
+        
+        Returns:
+            Dictionary containing lookback periods, MA types, and band settings.
+        """
+        std_devs = []
+        if self.view.sidebar.bb_std_1_check.isChecked(): std_devs.append(1.0)
+        if self.view.sidebar.bb_std_2_check.isChecked(): std_devs.append(2.0)
+        if self.view.sidebar.bb_std_3_check.isChecked(): std_devs.append(3.0)
+
+        return {
+            'td_lookback': self.view.sidebar.lookback_spin.value(),
+            'td_setup_max': self.view.sidebar.setup_spin.value(),
+            'td_countdown_max': self.view.sidebar.countdown_spin.value(),
+            'bb_period': self.view.sidebar.bb_period_spin.value(),
+            'bb_ma_type': self.view.sidebar.bb_ma_type_combo.currentText(),
+            'bb_std_devs': std_devs
+        }
+
     def refresh_chart(self):
-        """Recalculates indicators without re-downloading data."""
+        """
+        Recalculates technical indicators on the already loaded raw data.
+        Useful when settings (e.g. BB period) change but the ticker remains the same.
+        """
         if self.model.raw_df is None:
             return
 
-        # Optimization: Just recalculate math on current data
-        lookback = self.view.sidebar.lookback_spin.value()
-        setup_max = self.view.sidebar.setup_spin.value()
-        countdown_max = self.view.sidebar.countdown_spin.value()
+        settings = self._get_current_settings()
 
-        # Small calculation tasks can stay in main thread, 
-        # but for very large datasets we could thread this too.
-        processed_df = calculate_td_sequential(
-            self.model.raw_df,
-            flip_lookback=lookback,
-            setup_max=setup_max,
-            countdown_max=countdown_max
-        )
+        # Recalculate indicators. For large datasets, this could be threaded,
+        # but modern vectorized NumPy is efficient enough for local processing.
+        processed_df = calculate_indicators(self.model.raw_df, settings)
         
         self._update_view_with_data(processed_df, self.model.metadata)
 
-    def _on_data_ready(self, df, metadata):
-        """Callback for when threaded loading finishes."""
+    def _on_data_ready(self, df: pd.DataFrame, metadata: Dict[str, str]):
+        """Callback for when background data loading completes successfully."""
         self.view.set_loading_state(False)
         self._update_view_with_data(df, metadata)
 
-    def _on_loading_error(self, message):
-        """Callback for when threaded loading fails."""
+    def _on_loading_error(self, message: str):
+        """
+        Callback for background thread failures.
+        If a ticker isn't found, it automatically triggers a symbol search.
+        """
         self.view.set_loading_state(False)
         
-        # Check if it's a "not found" error and try to search
-        if "No data found" in message and hasattr(self, 'last_symbol'):
-            # Trigger search
+        if "No data found" in message and self.last_symbol:
+            # Re-enable loading state to indicate a search is in progress
             self.view.set_loading_state(True)
             self.view.load_action.setText("Searching...")
             self.model.search_symbol(self.last_symbol)
             return
 
-        QMessageBox.critical(self.view, "Error", message)
+        QMessageBox.critical(self.view, "Data Error", message)
 
-    def _on_search_results(self, results):
+    def _on_search_results(self, results: List[Dict[str, Any]]):
+        """Displays similar symbol suggestions when a direct match fails."""
         self.view.set_loading_state(False)
         if not results:
-             QMessageBox.critical(self.view, "Error", f"Symbol '{self.last_symbol}' not found and no similar symbols found.")
+             QMessageBox.critical(self.view, "Search Error", 
+                                f"Symbol '{self.last_symbol}' not found and no similar symbols found.")
              return
              
         dialog = SymbolSearchDialog(self.view, results)
         if dialog.exec():
+            # If user picks a suggestion, load it
             self.view.symbol_input.setText(dialog.selected_symbol)
             self.load_data(dialog.selected_symbol)
 
-    def _update_view_with_data(self, df, metadata):
-        """Helper to push data to the view."""
+    def _update_view_with_data(self, df: pd.DataFrame, metadata: Dict[str, str]):
+        """
+        Helper method to push a processed DataFrame to the rendering engine.
+        Also synchronizes visibility states from the sidebar to the chart.
+        """
+        # Synchronize visibility state before the chart repaints
+        self.view.chart.show_td_sequential = self.view.sidebar.td_checkbox.isChecked()
+        self.view.chart.show_bollinger_bands = self.view.sidebar.bb_checkbox.isChecked()
+        
+        # Sync standard deviation bands to render
+        std_devs = []
+        if self.view.sidebar.bb_std_1_check.isChecked(): std_devs.append(1.0)
+        if self.view.sidebar.bb_std_2_check.isChecked(): std_devs.append(2.0)
+        if self.view.sidebar.bb_std_3_check.isChecked(): std_devs.append(3.0)
+        self.view.chart.bb_std_devs = std_devs
+
         self.view.chart.set_data(
             df, 
             metadata.get('symbol', ''),
@@ -129,28 +184,42 @@ class MainController(QObject):
         )
 
     def on_td_toggle(self, state: int):
-        """Toggles indicator visibility and UI settings."""
+        """Handles TD Sequential indicator checkbox changes."""
         is_checked = state == Qt.CheckState.Checked.value
         self.view.chart.set_show_td_sequential(is_checked)
         self.view.sidebar.set_td_settings_visible(is_checked)
 
+    def on_bb_toggle(self, state: int):
+        """Handles Bollinger Bands indicator checkbox changes."""
+        is_checked = state == Qt.CheckState.Checked.value
+        self.view.chart.show_bollinger_bands = is_checked
+        self.view.sidebar.set_bb_settings_visible(is_checked)
+        # Recalculate to ensure bands are present in the current data slice
+        self.refresh_chart()
+
     def change_theme(self, theme_name: str):
-        """Updates colors across all views."""
+        """Applies a predefined color scheme to the entire application."""
         if theme_name in THEMES:
             self.view.apply_theme_styles(THEMES[theme_name])
 
     def toggle_sidebar(self):
-        """Toggles visibility of the settings panel."""
+        """Shows or hides the sidebar panel to maximize chart area."""
         is_visible = self.view.sidebar.isVisible()
         self.view.sidebar.setVisible(not is_visible)
         self.view.toggle_action.setChecked(not is_visible)
 
     def update_status_bar(self, data: Optional[Dict[str, Any]]):
-        """Formats and displays OHLC data in the status bar."""
+        """
+        Formats and displays price data in the status bar's HTML label.
+        
+        Args:
+            data: Dictionary containing 'Date', 'Open', 'High', 'Low', 'Close'.
+        """
         if not data:
             self.view.update_status_bar("Hover over chart to see price data")
             return
 
+        # Use colors from the status bar theme or fixed colors for OHLC clarity
         html = (
             f"<b>DATE:</b> <span style='color: #ffffff;'>{data['Date']}</span> | "
             f"<b>O:</b> <span style='color: #ffaa00;'>{data['Open']:.2f}</span> | "

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-01-08
+
+### Added
+- **Bollinger Bands Indicator**: Implemented a new technical indicator with customizable parameters:
+    - Period adjustment (default 20).
+    - Moving Average type selection (SMA or EMA).
+    - Multi-band support (Toggle 1, 2, and 3 Standard Deviations).
+- **Native BB Rendering**: Integrated Bollinger Bands into the `QPainter` engine with theme-aware colors and dynamic legend items.
+- **Enhanced Documentation**: Added comprehensive PEP 257 docstrings and PEP 484 type hints across the entire codebase to improve maintainability and developer onboarding.
+
+### Changed
+- **Indicator Architecture**: Refactored `models/indicators.py` to use a centralized `calculate_indicators` function, streamlining the data processing pipeline.
+- **Controller Logic**: Updated `MainController` to synchronize indicator visibility and parameter changes between the sidebar and the chart engine in real-time.
+
 ## [1.7.0] - 2026-01-08
 
 ### Added
