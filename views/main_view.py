@@ -22,6 +22,7 @@ class MainView(QMainWindow):
     
     # Signals notifying the controller of high-level user intents
     load_requested = Signal(str)
+    search_requested = Signal(str)
     sidebar_toggled = Signal()
     theme_requested = Signal(str)
 
@@ -75,6 +76,11 @@ class MainView(QMainWindow):
         self.load_action.triggered.connect(self._on_load_clicked)
         self.toolbar.addAction(self.load_action)
 
+        # Ticker Search Button
+        self.search_action = QAction("Search", self)
+        self.search_action.triggered.connect(self._on_search_clicked)
+        self.toolbar.addAction(self.search_action)
+
         # Right spacer
         spacer_right = QWidget()
         spacer_right.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -111,6 +117,10 @@ class MainView(QMainWindow):
         """Helper to collect text and emit a request to load a ticker."""
         self.load_requested.emit(self.symbol_input.text())
 
+    def _on_search_clicked(self):
+        """Helper to collect text and emit a request to search for a ticker."""
+        self.search_requested.emit(self.symbol_input.text())
+
     def _init_menu(self):
         """Configures the standard application menu bar."""
         self.menu_bar = self.menuBar()
@@ -134,6 +144,7 @@ class MainView(QMainWindow):
     def set_loading_state(self, is_loading: bool):
         """Disables inputs and shows a message during network operations."""
         self.load_action.setEnabled(not is_loading)
+        self.search_action.setEnabled(not is_loading)
         self.symbol_input.setEnabled(not is_loading)
         self.load_action.setText("Loading..." if is_loading else "Load")
         if is_loading:

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-01-09
+
+### Added
+- **Dynamic Font Management**: Introduced a new "FONT SIZES (RELATIVE)" section in the sidebar, allowing users to dynamically adjust the application's base font size and specific offsets for chart elements (Header, Labels, TD Setup, and TD Countdown).
+- **Explicit Symbol Search**: Added a dedicated "Search" button to the main toolbar next to the "Load" button. This allows users to manually trigger the `yfinance` search engine for partial ticker matches or company names.
+- **Improved Controller Signaling**: Added new signals and slots (`search_requested`, `font_settings_changed`, `on_font_settings_changed`) to coordinate font and search updates across the MVC architecture.
+
+### Changed
+- **Indicator Visuals**: Updated the default font offset for TD Sequential Setup numbers from -5 to -3 for improved legibility on modern displays.
+- **Toolbar UI**: Updated `set_loading_state` to synchronized all toolbar actions (Load, Search, Input) during background network operations.
+
 ## [1.9.0] - 2026-01-08
 
 ### Changed

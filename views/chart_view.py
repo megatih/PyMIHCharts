@@ -69,9 +69,9 @@ class CandlestickChart(QWidget):
         self.font_year.setPointSize(base_size - 3)
         self.font_year.setBold(True)
         
-        # TD Sequential Setup numbers (Keeping at 8pt)
+        # TD Sequential Setup numbers (Keeping at 10pt if base is 13)
         self.font_td_setup = QFont(base_font)
-        self.font_td_setup.setPointSize(base_size - 5)
+        self.font_td_setup.setPointSize(base_size - 3)
         
         # TD Sequential Countdown numbers (Keeping at 10pt)
         self.font_countdown = QFont(base_font)
@@ -172,6 +172,44 @@ class CandlestickChart(QWidget):
     def set_chart_type(self, chart_type: str):
         """Switches between Candlestick, OHLC, Line, and Heiken-Ashi."""
         self.chart_type = chart_type
+        self.update()
+
+    def update_font_settings(self, settings: Dict[str, int]):
+        """
+        Dynamically updates the relative font sizes used by the engine.
+        
+        Args:
+            settings: Dictionary containing 'base_size', 'header_offset', 
+                     'labels_offset', 'td_setup_offset', 'td_countdown_offset'.
+        """
+        base_font = QApplication.font()
+        base_size = settings.get('base_size', base_font.pointSize())
+        if base_size <= 0: base_size = 13
+        
+        # Re-initialize all fonts with new relative offsets
+        self.font_main = QFont(base_font)
+        self.font_main.setPointSize(base_size + settings.get('header_offset', 2))
+        self.font_main.setBold(True)
+        
+        self.font_labels = QFont(base_font)
+        self.font_labels.setPointSize(base_size + settings.get('labels_offset', -3))
+        
+        self.font_year = QFont(base_font)
+        self.font_year.setPointSize(base_size + settings.get('labels_offset', -3))
+        self.font_year.setBold(True)
+        
+        self.font_td_setup = QFont(base_font)
+        self.font_td_setup.setPointSize(base_size + settings.get('td_setup_offset', -3))
+        
+        self.font_countdown = QFont(base_font)
+        self.font_countdown.setPointSize(base_size + settings.get('td_countdown_offset', -3))
+        self.font_countdown.setBold(True)
+        
+        # Refresh metrics and margins
+        self.fm_main = QFontMetrics(self.font_main)
+        self.fm_labels = QFontMetrics(self.font_labels)
+        self._update_margins()
+        
         self.update()
 
     def set_data(self, df: pd.DataFrame, symbol: str, full_name: str = "", exchange: str = "", currency: str = ""):

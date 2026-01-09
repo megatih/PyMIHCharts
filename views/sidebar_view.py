@@ -7,7 +7,7 @@ switch chart types, and adjust technical parameters.
 
 from typing import Optional, Dict, Any, List
 from PySide6.QtWidgets import (QVBoxLayout, QWidget, QCheckBox, QFrame, 
-                             QSizePolicy, QSpinBox, QComboBox, QLabel, QFormLayout)
+                             QSizePolicy, QSpinBox, QComboBox, QLabel, QFormLayout, QApplication)
 from PySide6.QtCore import Qt, Signal
 
 
@@ -24,6 +24,7 @@ class SidebarView(QFrame):
     td_toggle_changed = Signal(int)
     bb_toggle_changed = Signal(int)
     setting_changed = Signal()
+    font_settings_changed = Signal()
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
@@ -127,6 +128,41 @@ class SidebarView(QFrame):
         indicator_layout.addWidget(self.bb_settings_container)
         
         self.layout.addWidget(indicator_group)
+
+        # --- Section: Font Sizes ---
+        font_group = QWidget()
+        font_layout = QVBoxLayout(font_group)
+        font_layout.setContentsMargins(0, 0, 0, 0)
+        font_layout.setSpacing(5)
+
+        lbl_font = QLabel("FONT SIZES (RELATIVE)")
+        lbl_font.setFont(font)
+        font_layout.addWidget(lbl_font)
+
+        self.font_settings_container = QWidget()
+        self.font_settings_layout = QFormLayout(self.font_settings_container)
+        self.font_settings_layout.setContentsMargins(20, 0, 0, 5)
+        self.font_settings_layout.setLabelAlignment(Qt.AlignLeft)
+
+        # Base size and offsets
+        base_font = QApplication.font()
+        base_size = base_font.pointSize()
+        if base_size <= 0: base_size = 13
+
+        self.base_font_spin = self._create_font_spin(6, 32, base_size)
+        self.header_offset_spin = self._create_font_spin(-10, 10, 2)
+        self.labels_offset_spin = self._create_font_spin(-10, 10, -3)
+        self.td_setup_offset_spin = self._create_font_spin(-10, 10, -3)
+        self.td_countdown_offset_spin = self._create_font_spin(-10, 10, -3)
+
+        self.font_settings_layout.addRow("Base Size:", self.base_font_spin)
+        self.font_settings_layout.addRow("Header Offset:", self.header_offset_spin)
+        self.font_settings_layout.addRow("Labels Offset:", self.labels_offset_spin)
+        self.font_settings_layout.addRow("TD Setup Off:", self.td_setup_offset_spin)
+        self.font_settings_layout.addRow("TD Count Off:", self.td_countdown_offset_spin)
+
+        font_layout.addWidget(self.font_settings_container)
+        self.layout.addWidget(font_group)
         
         # Push all content to the top
         self.layout.addStretch()
@@ -137,6 +173,14 @@ class SidebarView(QFrame):
         spin.setRange(min_v, max_v)
         spin.setValue(default)
         spin.valueChanged.connect(lambda: self.setting_changed.emit())
+        return spin
+
+    def _create_font_spin(self, min_v: int, max_v: int, default: int) -> QSpinBox:
+        """Helper to create a QSpinBox for font settings."""
+        spin = QSpinBox()
+        spin.setRange(min_v, max_v)
+        spin.setValue(default)
+        spin.valueChanged.connect(lambda: self.font_settings_changed.emit())
         return spin
 
     def set_td_settings_visible(self, visible: bool):

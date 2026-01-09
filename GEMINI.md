@@ -28,21 +28,21 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 ### View Layer (`views/`)
 - **`chart_view.py`**: The core rendering engine.
     - Uses native PySide6 `QPainter` for high-frame-rate interactive drawing.
-    - Implements a relative font architecture where all UI elements (headers, axis labels, indicators) scale dynamically based on `QApplication.font()`.
+    - Implements a relative font architecture where all UI elements (headers, axis labels, indicators) scale dynamically based on `QApplication.font()` and user-defined offsets.
     - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
-- **`sidebar_view.py`**: Contains control widgets for indicator settings and chart type selection.
+- **`sidebar_view.py`**: Contains control widgets for indicator settings, chart type selection, and relative font sizes.
     - Utilizes `QFormLayout` for standardized label-field alignment.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
-    - Implements a unified `QToolBar` (native behavior on macOS).
+    - Implements a unified `QToolBar` (native behavior on macOS) with **Load** and **Search** actions.
     - Uses `QSplitter` for a resizable Chart/Sidebar interface.
 - **`themes.py`**: Centralized repository for UI color schemes.
 
 ### Controller Layer (`controllers/`)
 - **`main_controller.py`**: The application's orchestrator.
-    - Connects View signals to Model requests.
+    - Connects View signals (`load_requested`, `search_requested`, `font_settings_changed`) to Model requests and View updates.
     - Safely bridges background worker results back to the Main UI Thread.
-    - Manages application-wide states (Active Ticker, Theme, Visibility).
+    - Manages application-wide states (Active Ticker, Theme, Visibility, Typography).
 
 ## Features & UI Interactions
 

@@ -44,6 +44,7 @@ class MainController(QObject):
         
         # Initial Application State
         self.change_theme("Default")
+        self.on_font_settings_changed()
         self.load_data("AAPL") # Load Apple as the default ticker
 
     def _setup_connections(self):
@@ -51,6 +52,7 @@ class MainController(QObject):
         
         # --- View -> Controller ---
         self.view.load_requested.connect(self.load_data)
+        self.view.search_requested.connect(self.search_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
         self.view.theme_requested.connect(self.change_theme)
         
@@ -59,6 +61,7 @@ class MainController(QObject):
         self.view.sidebar.td_toggle_changed.connect(self.on_td_toggle)
         self.view.sidebar.bb_toggle_changed.connect(self.on_bb_toggle)
         self.view.sidebar.setting_changed.connect(self.refresh_chart)
+        self.view.sidebar.font_settings_changed.connect(self.on_font_settings_changed)
         
         # --- Chart Interactions -> Controller ---
         self.view.chart.hovered_data_changed.connect(self.update_status_bar)
@@ -86,6 +89,22 @@ class MainController(QObject):
         # Capture current sidebar settings to pass to the background calculation
         settings = self._get_current_settings()
         self.model.request_data(symbol, settings)
+
+    def search_data(self, query: str):
+        """
+        Initiates a symbol search based on the user's query.
+        
+        Args:
+            query: The search string (e.g. name or partial ticker).
+        """
+        query = query.strip()
+        if not query:
+            return
+
+        self.last_symbol = query
+        self.view.set_loading_state(True)
+        self.view.load_action.setText("Searching...")
+        self.model.search_symbol(query)
 
     def _get_current_settings(self) -> Dict[str, Any]:
         """
@@ -196,6 +215,27 @@ class MainController(QObject):
         self.view.sidebar.set_bb_settings_visible(is_checked)
         # Recalculate to ensure bands are present in the current data slice
         self.refresh_chart()
+
+    def on_font_settings_changed(self):
+        """
+        Synchronizes UI font changes with the rendering engine and global application state.
+        """
+        base_size = self.view.sidebar.base_font_spin.value()
+        
+        # 1. Update Global Application Font (Affects sidebar, menus, etc.)
+        app_font = QApplication.font()
+        app_font.setPointSize(base_size)
+        QApplication.setFont(app_font)
+        
+        # 2. Update Specialized Chart Rendering Fonts
+        font_settings = {
+            'base_size': base_size,
+            'header_offset': self.view.sidebar.header_offset_spin.value(),
+            'labels_offset': self.view.sidebar.labels_offset_spin.value(),
+            'td_setup_offset': self.view.sidebar.td_setup_offset_spin.value(),
+            'td_countdown_offset': self.view.sidebar.td_countdown_offset_spin.value()
+        }
+        self.view.chart.update_font_settings(font_settings)
 
     def change_theme(self, theme_name: str):
         """Applies a predefined color scheme to the entire application."""
