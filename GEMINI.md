@@ -34,15 +34,17 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - Utilizes a custom `CollapsibleSection` widget for an "Accordion" style interface.
     - Groups settings into logical, toggleable sections (**Chart Type**, **Indicators**, **Font Sizes**).
     - Uses `QFormLayout` within sections for standardized label-field alignment.
+    - Implements a centralized `_tooltips` dictionary and `set_tooltips_enabled()` method for global tooltip management.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
     - Implements a unified `QToolBar` (native behavior on macOS) with **Load** and **Search** actions.
     - Uses `QSplitter` for a resizable Chart/Sidebar interface.
+    - Features a "View" menu with toggles for Sidebar visibility and Tooltip display.
 - **`themes.py`**: Centralized repository for UI color schemes.
 
 ### Controller Layer (`controllers/`)
 - **`main_controller.py`**: The application's orchestrator.
-    - Connects View signals (`load_requested`, `search_requested`, `font_settings_changed`) to Model requests and View updates.
+    - Connects View signals (`load_requested`, `search_requested`, `font_settings_changed`, `tooltips_toggled`) to Model requests and View updates.
     - Safely bridges background worker results back to the Main UI Thread.
     - Manages application-wide states (Active Ticker, Theme, Visibility, Typography).
 

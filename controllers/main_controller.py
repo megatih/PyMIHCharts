@@ -54,6 +54,7 @@ class MainController(QObject):
         self.view.load_requested.connect(self.load_data)
         self.view.search_requested.connect(self.search_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
+        self.view.tooltips_toggled.connect(self.view.sidebar.set_tooltips_enabled)
         self.view.theme_requested.connect(self.change_theme)
         
         # --- Sidebar Controls -> Controller ---

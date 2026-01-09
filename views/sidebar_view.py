@@ -68,6 +68,15 @@ class CollapsibleSection(QWidget):
         self.content.setVisible(self._is_expanded)
         self.toggle_btn.setArrowType(Qt.DownArrow if self._is_expanded else Qt.RightArrow)
 
+    def set_tooltips_enabled(self, enabled: bool):
+        """Toggles tooltips for the header and toggle button."""
+        if enabled:
+            self.header.setToolTip("Click to expand or collapse this section")
+            self.toggle_btn.setToolTip("Expand or collapse this section")
+        else:
+            self.header.setToolTip("")
+            self.toggle_btn.setToolTip("")
+
     def add_widget(self, widget: QWidget):
         self.content_layout.addWidget(widget)
 
@@ -96,7 +105,55 @@ class SidebarView(QFrame):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setFrameShape(QFrame.NoFrame)
+        self._tooltips = {}
         self._init_ui()
+        self._define_tooltips()
+        self.set_tooltips_enabled(True)
+
+    def _define_tooltips(self):
+        """Defines tooltip text for all sidebar components."""
+        self._tooltips = {
+            self.chart_type_combo: "Select the visual representation of price data (Candlestick, OHLC, Line, or Heiken-Ashi).",
+            self.td_label: "Tom DeMark Sequential: A technical indicator used to identify exhaustion in price trends.",
+            self.td_checkbox: "Toggle Tom DeMark (TD) Sequential indicator display.",
+            self.lookback_label: "Number of periods to look back for price flip calculation.",
+            self.lookback_spin: "Number of periods to look back for price flip calculation.",
+            self.setup_label: "Number of consecutive bars required for a completed TD Setup.",
+            self.setup_spin: "Number of consecutive bars required for a completed TD Setup.",
+            self.countdown_label: "Number of bars required for a completed TD Countdown.",
+            self.countdown_spin: "Number of bars required for a completed TD Countdown.",
+            self.bb_label: "Bollinger Bands: A volatility indicator consisting of a moving average and two standard deviation bands.",
+            self.bb_checkbox: "Toggle Bollinger Bands indicator display.",
+            self.bb_period_label: "Number of periods used for Moving Average and Standard Deviation calculations.",
+            self.bb_period_spin: "Number of periods used for Moving Average and Standard Deviation calculations.",
+            self.bb_ma_type_label: "Type of Moving Average (Simple or Exponential) for the center band.",
+            self.bb_ma_type_combo: "Type of Moving Average (Simple or Exponential) for the center band.",
+            self.bb_bands_label: "Select which standard deviation bands to display.",
+            self.bb_std_1_check: "Show band at 1 standard deviation.",
+            self.bb_std_2_check: "Show band at 2 standard deviations.",
+            self.bb_std_3_check: "Show band at 3 standard deviations.",
+            self.base_font_label: "Base font size for the entire application UI.",
+            self.base_font_spin: "Base font size for the entire application UI.",
+            self.header_offset_label: "Relative size adjustment for chart headers and titles.",
+            self.header_offset_spin: "Relative size adjustment for chart headers and titles.",
+            self.labels_offset_label: "Relative size adjustment for axis labels and timestamps.",
+            self.labels_offset_spin: "Relative size adjustment for axis labels and timestamps.",
+            self.td_setup_offset_label: "Relative size adjustment for TD Setup numbers.",
+            self.td_setup_offset_spin: "Relative size adjustment for TD Setup numbers.",
+            self.td_countdown_offset_label: "Relative size adjustment for TD Countdown numbers.",
+            self.td_countdown_offset_spin: "Relative size adjustment for TD Countdown numbers."
+        }
+
+    def set_tooltips_enabled(self, enabled: bool):
+        """Enables or disables tooltips for all components in the sidebar."""
+        # Toggle section tooltips
+        self.chart_section.set_tooltips_enabled(enabled)
+        self.indicator_section.set_tooltips_enabled(enabled)
+        self.font_section.set_tooltips_enabled(enabled)
+
+        # Toggle widget tooltips
+        for widget, tooltip in self._tooltips.items():
+            widget.setToolTip(tooltip if enabled else "")
 
     def _init_ui(self):
         """Builds the layout and initializes widgets."""
@@ -118,12 +175,12 @@ class SidebarView(QFrame):
         self.indicator_section = CollapsibleSection("Indicators")
         
         # 1. TD Sequential Sub-section
-        td_label = QLabel("TD SEQUENTIAL")
-        font = td_label.font()
+        self.td_label = QLabel("TD SEQUENTIAL")
+        font = self.td_label.font()
         font.setBold(True)
         font.setPointSize(font.pointSize() - 1)
-        td_label.setFont(font)
-        self.indicator_section.add_widget(td_label)
+        self.td_label.setFont(font)
+        self.indicator_section.add_widget(self.td_label)
 
         self.td_checkbox = QCheckBox("Show TD Sequential")
         self.td_checkbox.setChecked(True)
@@ -137,9 +194,13 @@ class SidebarView(QFrame):
         self.setup_spin = self._create_spin_setting(2, 50, 9)
         self.countdown_spin = self._create_spin_setting(2, 100, 13)
         
-        self.td_settings_layout.addRow("Lookback:", self.lookback_spin)
-        self.td_settings_layout.addRow("Setup:", self.setup_spin)
-        self.td_settings_layout.addRow("Countdown:", self.countdown_spin)
+        self.lookback_label = QLabel("Lookback:")
+        self.setup_label = QLabel("Setup:")
+        self.countdown_label = QLabel("Countdown:")
+        
+        self.td_settings_layout.addRow(self.lookback_label, self.lookback_spin)
+        self.td_settings_layout.addRow(self.setup_label, self.setup_spin)
+        self.td_settings_layout.addRow(self.countdown_label, self.countdown_spin)
         self.indicator_section.add_layout(self.td_settings_layout)
 
         # Separator inside section
@@ -149,9 +210,9 @@ class SidebarView(QFrame):
         self.indicator_section.add_widget(self.indicator_sep)
 
         # 2. Bollinger Bands Sub-section
-        bb_label = QLabel("BOLLINGER BANDS")
-        bb_label.setFont(font)
-        self.indicator_section.add_widget(bb_label)
+        self.bb_label = QLabel("BOLLINGER BANDS")
+        self.bb_label.setFont(font)
+        self.indicator_section.add_widget(self.bb_label)
 
         self.bb_checkbox = QCheckBox("Show Bollinger Bands")
         self.bb_checkbox.setChecked(False)
@@ -174,14 +235,18 @@ class SidebarView(QFrame):
         for cb in [self.bb_std_1_check, self.bb_std_2_check, self.bb_std_3_check]:
             cb.stateChanged.connect(lambda: self.setting_changed.emit())
 
-        self.bb_settings_layout.addRow("Period:", self.bb_period_spin)
-        self.bb_settings_layout.addRow("MA Type:", self.bb_ma_type_combo)
+        self.bb_period_label = QLabel("Period:")
+        self.bb_ma_type_label = QLabel("MA Type:")
+        self.bb_bands_label = QLabel("Bands:")
+
+        self.bb_settings_layout.addRow(self.bb_period_label, self.bb_period_spin)
+        self.bb_settings_layout.addRow(self.bb_ma_type_label, self.bb_ma_type_combo)
         
         std_layout = QVBoxLayout()
         std_layout.addWidget(self.bb_std_1_check)
         std_layout.addWidget(self.bb_std_2_check)
         std_layout.addWidget(self.bb_std_3_check)
-        self.bb_settings_layout.addRow("Bands:", std_layout)
+        self.bb_settings_layout.addRow(self.bb_bands_label, std_layout)
 
         self.indicator_section.add_layout(self.bb_settings_layout)
         self.layout.addWidget(self.indicator_section)
@@ -202,11 +267,17 @@ class SidebarView(QFrame):
         self.td_setup_offset_spin = self._create_font_spin(-10, 10, -3)
         self.td_countdown_offset_spin = self._create_font_spin(-10, 10, -3)
 
-        self.font_settings_layout.addRow("Base Size:", self.base_font_spin)
-        self.font_settings_layout.addRow("Header Offset:", self.header_offset_spin)
-        self.font_settings_layout.addRow("Labels Offset:", self.labels_offset_spin)
-        self.font_settings_layout.addRow("TD Setup Off:", self.td_setup_offset_spin)
-        self.font_settings_layout.addRow("TD Count Off:", self.td_countdown_offset_spin)
+        self.base_font_label = QLabel("Base Size:")
+        self.header_offset_label = QLabel("Header Offset:")
+        self.labels_offset_label = QLabel("Labels Offset:")
+        self.td_setup_offset_label = QLabel("TD Setup Off:")
+        self.td_countdown_offset_label = QLabel("TD Count Off:")
+
+        self.font_settings_layout.addRow(self.base_font_label, self.base_font_spin)
+        self.font_settings_layout.addRow(self.header_offset_label, self.header_offset_spin)
+        self.font_settings_layout.addRow(self.labels_offset_label, self.labels_offset_spin)
+        self.font_settings_layout.addRow(self.td_setup_offset_label, self.td_setup_offset_spin)
+        self.font_settings_layout.addRow(self.td_countdown_offset_label, self.td_countdown_offset_spin)
 
         self.font_section.add_layout(self.font_settings_layout)
         self.layout.addWidget(self.font_section)

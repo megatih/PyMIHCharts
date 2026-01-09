@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2026-01-09
+
+### Added
+- **Global Tooltip System**: Implemented a comprehensive tooltip system across the entire Sidebar Property Browser.
+- **Detailed Component Descriptions**: Added descriptive tooltips to all sidebar widgets (Checkboxes, SpinBoxes, ComboBoxes) and their corresponding labels to explain technical parameters (e.g., TD Lookback, BB Standard Deviations).
+- **Collapsible Section Tooltips**: Enhanced `CollapsibleSection` with tooltips on headers and toggle buttons to improve discoverability.
+- **Tooltip Toggle**: Added a "Show Tooltips" checkable menu item in the **View** menu to allow users to enable or disable tooltips globally (enabled by default).
+
+### Changed
+- **Sidebar UX**: Refactored sidebar layouts to use explicit labels for all form rows, ensuring that hovering over a label provides the same descriptive context as the widget itself.
+
 ## [2.1.0] - 2026-01-09
 
 ### Added

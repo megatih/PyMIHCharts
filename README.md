@@ -10,6 +10,7 @@ A high-performance, native Python desktop application for professional technical
     - **Property Browser Sidebar**: An "Accordion" style settings panel with **collapsible sections** for a clean, organized workspace.
     - **Unified Toolbar**: Native macOS-style toolbar integration for seamless interaction.
     - **Explicit Search**: Dedicated **Search** button for manual ticker discovery via `yfinance`.
+    - **Interactive Tooltips**: Detailed descriptive tooltips for all sidebar settings and labels, toggleable via the "View" menu.
     - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
     - **Dynamic Typography**: Real-time control over application-wide font sizes and relative chart text offsets.
     - **Polished Controls**: Standardized form layouts and native widgets for a professional look and feel.

@@ -24,6 +24,7 @@ class MainView(QMainWindow):
     load_requested = Signal(str)
     search_requested = Signal(str)
     sidebar_toggled = Signal()
+    tooltips_toggled = Signal(bool)
     theme_requested = Signal(str)
 
     def __init__(self):
@@ -128,6 +129,14 @@ class MainView(QMainWindow):
         
         # Mirror the toolbar's sidebar toggle in the menu
         self.view_menu.addAction(self.toggle_action)
+        
+        # Tooltips toggle
+        self.tooltips_action = QAction("Show Tooltips", self)
+        self.tooltips_action.setCheckable(True)
+        self.tooltips_action.setChecked(True)
+        self.tooltips_action.toggled.connect(self.tooltips_toggled.emit)
+        self.view_menu.addAction(self.tooltips_action)
+        
         self.view_menu.addSeparator()
         
         # Dynamic theme selection menu
