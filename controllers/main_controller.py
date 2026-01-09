@@ -206,13 +206,11 @@ class MainController(QObject):
         """Handles TD Sequential indicator checkbox changes."""
         is_checked = state == Qt.CheckState.Checked.value
         self.view.chart.set_show_td_sequential(is_checked)
-        self.view.sidebar.set_td_settings_visible(is_checked)
 
     def on_bb_toggle(self, state: int):
         """Handles Bollinger Bands indicator checkbox changes."""
         is_checked = state == Qt.CheckState.Checked.value
         self.view.chart.show_bollinger_bands = is_checked
-        self.view.sidebar.set_bb_settings_visible(is_checked)
         # Recalculate to ensure bands are present in the current data slice
         self.refresh_chart()
 

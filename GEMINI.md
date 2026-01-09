@@ -30,8 +30,10 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - Uses native PySide6 `QPainter` for high-frame-rate interactive drawing.
     - Implements a relative font architecture where all UI elements (headers, axis labels, indicators) scale dynamically based on `QApplication.font()` and user-defined offsets.
     - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
-- **`sidebar_view.py`**: Contains control widgets for indicator settings, chart type selection, and relative font sizes.
-    - Utilizes `QFormLayout` for standardized label-field alignment.
+- **`sidebar_view.py`**: A modern **Property Browser** component.
+    - Utilizes a custom `CollapsibleSection` widget for an "Accordion" style interface.
+    - Groups settings into logical, toggleable sections (**Chart Type**, **Indicators**, **Font Sizes**).
+    - Uses `QFormLayout` within sections for standardized label-field alignment.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
     - Implements a unified `QToolBar` (native behavior on macOS) with **Load** and **Search** actions.

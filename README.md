@@ -7,6 +7,7 @@ A high-performance, native Python desktop application for professional technical
 ## Key Features
 
 - **Modern Native UI (Qt6)**:
+    - **Property Browser Sidebar**: An "Accordion" style settings panel with **collapsible sections** for a clean, organized workspace.
     - **Unified Toolbar**: Native macOS-style toolbar integration for seamless interaction.
     - **Explicit Search**: Dedicated **Search** button for manual ticker discovery via `yfinance`.
     - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
@@ -69,9 +70,9 @@ PyMIHCharts is built using a professional **Model-View-Controller (MVC)** archit
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.
 2. Click **Load** to fetch data or **Search** to find similar symbols using partial names or tickers.
-3. Use the **Chart Type** dropdown in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
-4. Toggle **TD Sequential** or **Bollinger Bands** and adjust their parameters in the sidebar.
-5. Use the **FONT SIZES** section at the bottom of the sidebar to dynamically scale the UI and chart text.
+3. Expand the **CHART TYPE** section in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
+4. Expand the **INDICATORS** section to toggle **TD Sequential** or **Bollinger Bands** and adjust their specific parameters.
+5. Expand the **FONT SIZES** section at the bottom of the sidebar to dynamically scale the UI and chart text.
 6. Use the **Mouse Wheel** to zoom (or **Pinch-to-Zoom** if a touchscreen is available) and **Left-Click + Drag** to scroll.
 7. Hover over any bar to trigger the **Snapping Crosshair** and see detailed price info at the bottom right.
 

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-01-09
+
+### Added
+- **Property Browser Sidebar**: Transformed the sidebar into a modern "Accordion" style Property Browser using collapsible sections.
+- **CollapsibleSection Widget**: Created a custom, theme-aware widget that provides clickable headers with chevron icons to manage UI complexity.
+
+### Changed
+- **Sidebar Organization**: Reorganized settings into three distinct collapsible groups: **CHART TYPE**, **INDICATORS**, and **FONT SIZES**.
+- **Indicator UI Logic**: Grouped all technical indicator settings (TD Sequential and Bollinger Bands) under a single section. Removed automatic visibility toggling for these settings to provide a consistent "Property Grid" experience.
+- **Styling**: Enhanced sidebar headers with theme-integrated backgrounds and interactive cursor feedback.
+
 ## [2.0.0] - 2026-01-09
 
 ### Added
