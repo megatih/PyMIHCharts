@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.1] - 2026-01-10
+
+### Changed
+- **Documentation**: Updated `README.md` and project assets with high-resolution screenshots reflecting the latest UI enhancements, including the Multi-Interval Support and refined sidebar layouts.
+
 ## [2.4.0] - 2026-01-10
 
 ### Added

@@ -17,7 +17,7 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 
 ### Model Layer (`models/`)
 - **`data_manager.py`**: Manages data state and coordinates asynchronous processing.
-    - **`DataWorker`**: A `QObject` designed to run in a separate `QThread`. It handles ticker downloads and heavy technical indicator math.
+    - **`DataWorker`**: A `QObject` designed to run in a separate `QThread`. It handles ticker downloads, technical indicator math, and **Automatic Period Optimization** to ensure successful downloads across different intervals.
     - **`SearchWorker`**: A `QObject` designed to run in a separate `QThread`. It utilizes `yfinance`'s search feature to find symbols when a direct lookup fails.
     - **`DataManager`**: Controls worker lifecycles and emits signals (`data_ready`, `loading_error`, `search_results`) to the Controller.
 - **`recent_symbols.py`**: Handles persistent storage of user-entered symbols.
@@ -37,6 +37,7 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - Groups settings into logical, toggleable sections (**Data Settings**, **Chart Type**, **Indicators**, **Font Sizes**).
     - Implements an interval selector with auto-reload logic.
     - Uses `QFormLayout` within sections for standardized label-field alignment.
+    - Employs targeted QSS for robust layout consistency and full text visibility in combo boxes.
     - Implements a centralized `_tooltips` dictionary and `set_tooltips_enabled()` method for global tooltip management.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.

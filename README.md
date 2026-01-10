@@ -26,7 +26,7 @@ A high-performance, native Python desktop application for professional technical
     - **Adaptive Axis**: Date and Price axes that intelligently scale and format based on zoom levels.
     - **Advanced Interactions**: Mouse wheel zoom, click-drag panning, and **Pinch-to-Zoom** for touch devices.
 - **Data Integration**:
-    - **Multi-Interval Support**: Toggle between various timeframes ranging from 1 minute (`1m`) to 3 months (`3mo`).
+    - **Multi-Interval Support**: Toggle between 13 different timeframes ranging from 1 minute (`1m`) to 3 months (`3mo`), accessible via the new **DATA SETTINGS** sidebar section.
     - **Automatic Period Optimization**: The app intelligently selects the maximum allowed data history for each interval to ensure successful downloads.
     - **Automated Downloads**: Real-time historical daily and intraday data via `yfinance`.
 - **Smart Symbol Search**: If a ticker symbol is not found, the app automatically queries `yfinance` for matches and presents a selection dialog, ensuring users always find the right asset.
