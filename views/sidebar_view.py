@@ -106,6 +106,8 @@ class SidebarView(QFrame):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setFrameShape(QFrame.NoFrame)
+        self.setMinimumWidth(280) 
+        
         self._tooltips = {}
         self._init_ui()
         self._define_tooltips()
@@ -327,7 +329,15 @@ class SidebarView(QFrame):
 
     def apply_theme_styles(self, theme: Dict[str, str]):
         """Applies theme colors via QSS (Qt Style Sheets)."""
-        self.setStyleSheet(f"background-color: {theme['widget_bg']}; color: {theme['text_main']}; border: none;")
+        self.setStyleSheet(f"""
+            SidebarView {{ background-color: {theme['widget_bg']}; color: {theme['text_main']}; border: none; }}
+            QComboBox {{ 
+                min-width: 160px; 
+                padding: 2px 25px 2px 5px;
+                background-color: {theme['status_bg']};
+                color: {theme['status_text']};
+            }}
+        """)
         
         header_style = f"""
             QWidget {{ 
