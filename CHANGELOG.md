@@ -10,7 +10,9 @@ All notable changes to this project will be documented in this file.
 - **Auto-Reload on Change**: Configured the UI to automatically trigger a data fetch whenever a new interval is selected, providing instant visual feedback.
 
 ### Changed
-- **Improved UI Labels**: Updated all shorthand interval and moving average codes (e.g., "1m", "1d", "SMA") to full descriptive names (e.g., "1 Minute", "1 Day", "Simple Moving Average") in the sidebar for better accessibility and user clarity. Internal logic still maintains efficient shorthand processing via Qt UserRoles.
+- **Improved UI Labels**: Updated all shorthand interval and moving average codes (e.g., "1m", "1d", "SMA") to full descriptive names (e.g., "1 Minute", "1 Day", "Simple Moving Average") in the sidebar for better accessibility and user clarity.
+- **Robust Sidebar Layout**: Implemented targeted QSS (Qt Style Sheets) for combo boxes, adding specific minimum widths and internal right padding to ensure full text visibility for long descriptive names, accounting for dropdown arrows and checkmarks.
+- **Responsive Geometry**: Increased the sidebar's minimum width to 280px to accommodate the expanded labeling without text clipping. Internal logic still maintains efficient shorthand processing via Qt UserRoles.
 
 ## [2.3.0] - 2026-01-10
 
