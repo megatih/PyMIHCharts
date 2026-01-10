@@ -106,7 +106,7 @@ class SidebarView(QFrame):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setFrameShape(QFrame.NoFrame)
-        self.setMinimumWidth(250) # Ensure enough space for descriptive names
+        self.setMinimumWidth(320) # Increased to provide more horizontal space
         
         self._tooltips = {}
         self._init_ui()
@@ -182,6 +182,7 @@ class SidebarView(QFrame):
         
         self.interval_combo = QComboBox()
         self.interval_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.interval_combo.setMinimumWidth(200) # Force width to accommodate long names
         intervals = [
             ("1 Minute", "1m"), ("2 Minutes", "2m"), ("5 Minutes", "5m"),
             ("15 Minutes", "15m"), ("30 Minutes", "30m"), ("60 Minutes", "60m"),
@@ -206,6 +207,7 @@ class SidebarView(QFrame):
         
         self.chart_type_combo = QComboBox()
         self.chart_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.chart_type_combo.setMinimumWidth(200)
         self.chart_type_combo.addItems(["Candlestick", "OHLC", "Line", "Heiken-Ashi"])
         self.chart_type_combo.currentTextChanged.connect(self.chart_type_changed.emit)
         
@@ -268,6 +270,7 @@ class SidebarView(QFrame):
         self.bb_period_spin = self._create_spin_setting(1, 200, 20)
         self.bb_ma_type_combo = QComboBox()
         self.bb_ma_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.bb_ma_type_combo.setMinimumWidth(200)
         self.bb_ma_type_combo.addItem("Simple Moving Average", "SMA")
         self.bb_ma_type_combo.addItem("Exponential Moving Average", "EMA")
         self.bb_ma_type_combo.currentTextChanged.connect(lambda: self.setting_changed.emit())
