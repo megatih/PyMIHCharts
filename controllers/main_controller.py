@@ -12,6 +12,7 @@ from PySide6.QtCore import Qt, QObject, Slot
 
 from models.data_manager import DataManager
 from models.indicators import calculate_indicators
+from models.recent_symbols import RecentSymbolsManager
 from views.main_view import MainView
 from views.search_dialog import SymbolSearchDialog
 from views.themes import THEMES
@@ -39,19 +40,23 @@ class MainController(QObject):
         self.model = model
         self.view = view
         self.last_symbol: Optional[str] = None
+        self.recent_manager = RecentSymbolsManager()
         
         self._setup_connections()
         
         # Initial Application State
         self.change_theme("Default")
         self.on_font_settings_changed()
-        self.load_data("AAPL") # Load Apple as the default ticker
+        self._refresh_recent_symbols_ui()
+        
+        # Initial data loading (does not count toward popularity)
+        self.load_data("AAPL", is_manual=False)
 
     def _setup_connections(self):
         """Wires up view signals to controller slots."""
         
         # --- View -> Controller ---
-        self.view.load_requested.connect(self.load_data)
+        self.view.load_requested.connect(lambda s: self.load_data(s, is_manual=True))
         self.view.search_requested.connect(self.search_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
         self.view.tooltips_toggled.connect(self.view.sidebar.set_tooltips_enabled)
@@ -73,12 +78,13 @@ class MainController(QObject):
         self.model.search_results.connect(self._on_search_results)
 
     @Slot(str)
-    def load_data(self, symbol: str):
+    def load_data(self, symbol: str, is_manual: bool = True):
         """
         Initiates a new data fetch for the given ticker.
         
         Args:
             symbol: Ticker symbol string.
+            is_manual: Whether the load was triggered by user input (vs startup).
         """
         symbol = symbol.upper().strip()
         if not symbol:
@@ -87,9 +93,18 @@ class MainController(QObject):
         self.last_symbol = symbol
         self.view.set_loading_state(True)
         
+        if is_manual:
+            self.recent_manager.increment_symbol(symbol)
+            self._refresh_recent_symbols_ui()
+
         # Capture current sidebar settings to pass to the background calculation
         settings = self._get_current_settings()
         self.model.request_data(symbol, settings)
+
+    def _refresh_recent_symbols_ui(self):
+        """Updates the dropdown list in the view with the latest top symbols."""
+        top_symbols = self.recent_manager.get_top_symbols(limit=20)
+        self.view.update_symbol_list(top_symbols)
 
     def search_data(self, query: str):
         """
@@ -176,8 +191,8 @@ class MainController(QObject):
         dialog = SymbolSearchDialog(self.view, results)
         if dialog.exec():
             # If user picks a suggestion, load it
-            self.view.symbol_input.setText(dialog.selected_symbol)
-            self.load_data(dialog.selected_symbol)
+            self.view.symbol_input.setCurrentText(dialog.selected_symbol)
+            self.load_data(dialog.selected_symbol, is_manual=True)
 
     def _update_view_with_data(self, df: pd.DataFrame, metadata: Dict[str, str]):
         """

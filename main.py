@@ -28,6 +28,8 @@ def main():
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     
     app = QApplication(sys.argv)
+    app.setApplicationName("PyMIHCharts")
+    app.setOrganizationName("PyMIHCharts")
     
     # --- MVC Initialization ---
     

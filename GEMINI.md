@@ -20,6 +20,8 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - **`DataWorker`**: A `QObject` designed to run in a separate `QThread`. It handles ticker downloads and heavy technical indicator math.
     - **`SearchWorker`**: A `QObject` designed to run in a separate `QThread`. It utilizes `yfinance`'s search feature to find symbols when a direct lookup fails.
     - **`DataManager`**: Controls worker lifecycles and emits signals (`data_ready`, `loading_error`, `search_results`) to the Controller.
+- **`recent_symbols.py`**: Handles persistent storage of user-entered symbols.
+    - **`RecentSymbolsManager`**: Manages reading/writing `recentsymbols.xml` in the app's config directory and provides popularity-based sorting for the UI.
 - **`indicators.py`**: Contains the core technical analysis logic.
     - **TD Sequential**: Vectorized calculation of Price Flips, Setups, and Countdowns.
     - **Bollinger Bands**: Vectorized SMA/EMA and Standard Deviation calculations.
@@ -38,6 +40,7 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.
 - **`main_view.py`**: The primary container that manages the application's overall layout and menu system.
     - Implements a unified `QToolBar` (native behavior on macOS) with **Load** and **Search** actions.
+    - Features a **Recent Symbols** editable dropdown (`QComboBox`) for quick access to frequently used tickers.
     - Uses `QSplitter` for a resizable Chart/Sidebar interface.
     - Features a "View" menu with toggles for Sidebar visibility and Tooltip display.
 - **`themes.py`**: Centralized repository for UI color schemes.

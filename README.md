@@ -16,6 +16,8 @@ A high-performance, native Python desktop application for professional technical
 - **Modern Native UI (Qt6)**:
     - **Property Browser Sidebar**: An "Accordion" style settings panel with **collapsible sections** for a clean, organized workspace.
     - **Unified Toolbar**: Native macOS-style toolbar integration for seamless interaction.
+    - **Recent Symbols Dropdown**: High-performance `QComboBox` replaces the standard input field, providing a persistent history of recently used tickers.
+    - **Smart Popularity Sorting**: The symbols list is automatically ordered by usage frequency, stored in a platform-native XML configuration file.
     - **Explicit Search**: Dedicated **Search** button for manual ticker discovery via `yfinance`.
     - **Interactive Tooltips**: Detailed descriptive tooltips for all sidebar settings and labels, toggleable via the "View" menu.
     - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
@@ -76,7 +78,7 @@ PyMIHCharts is built using a professional **Model-View-Controller (MVC)** archit
 - **Controller**: Real-time signal coordination between the UI and background processing threads.
 
 ## How to Use
-1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field.
+1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field, or select a previously used ticker from the **Recent Symbols** dropdown.
 2. Click **Load** to fetch data or **Search** to find similar symbols using partial names or tickers.
 3. Expand the **CHART TYPE** section in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
 4. Expand the **INDICATORS** section to toggle **TD Sequential** or **Bollinger Bands** and adjust their specific parameters.

@@ -5,9 +5,9 @@ This class serves as the top-level container, assembling the Toolbar,
 the interactive Chart, the Sidebar settings panel, and the Status Bar.
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, 
-                             QWidget, QLineEdit, QSplitter, QStatusBar, QToolBar, QSizePolicy, QLabel)
+                             QWidget, QLineEdit, QSplitter, QStatusBar, QToolBar, QSizePolicy, QLabel, QComboBox)
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QSize
 from views.chart_view import CandlestickChart
@@ -64,12 +64,13 @@ class MainView(QMainWindow):
         spacer_left.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.toolbar.addWidget(spacer_left)
 
-        # Ticker Input Field
-        self.symbol_input = QLineEdit()
-        self.symbol_input.setPlaceholderText("Ticker (e.g. AAPL)")
-        self.symbol_input.setText("AAPL")
+        # Ticker Input Field (Editable ComboBox for Recent Symbols)
+        self.symbol_input = QComboBox()
+        self.symbol_input.setEditable(True)
+        self.symbol_input.setInsertPolicy(QComboBox.NoInsert)
+        self.symbol_input.lineEdit().setPlaceholderText("Ticker (e.g. AAPL)")
         self.symbol_input.setFixedWidth(150)
-        self.symbol_input.returnPressed.connect(self._on_load_clicked)
+        self.symbol_input.lineEdit().returnPressed.connect(self._on_load_clicked)
         self.toolbar.addWidget(self.symbol_input)
         
         # Ticker Load Button
@@ -116,11 +117,21 @@ class MainView(QMainWindow):
 
     def _on_load_clicked(self):
         """Helper to collect text and emit a request to load a ticker."""
-        self.load_requested.emit(self.symbol_input.text())
+        self.load_requested.emit(self.symbol_input.currentText())
 
     def _on_search_clicked(self):
         """Helper to collect text and emit a request to search for a ticker."""
-        self.search_requested.emit(self.symbol_input.text())
+        self.search_requested.emit(self.symbol_input.currentText())
+
+    def update_symbol_list(self, symbols: List[str]):
+        """
+        Updates the symbols dropdown with the provided list.
+        Maintains the user's current text entry.
+        """
+        current_text = self.symbol_input.currentText()
+        self.symbol_input.clear()
+        self.symbol_input.addItems(symbols)
+        self.symbol_input.setCurrentText(current_text)
 
     def _init_menu(self):
         """Configures the standard application menu bar."""

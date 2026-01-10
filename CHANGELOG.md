@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2026-01-10
+
+### Added
+- **Persistent Recent Symbols**: Replaced the standard ticker input field with a smart `QComboBox` that tracks and persists recently used symbols.
+- **Popularity-Based Sorting**: Implemented an automated sorting mechanism where the symbol dropdown is ordered by the frequency of user selection (most popular at the top).
+- **XML Data Persistence**: Added `RecentSymbolsManager` to handle cross-session storage in a platform-native `recentsymbols.xml` file located in the application's configuration directory.
+- **Smart Tracking**: Configured the application to only count manual symbol entries and search selections toward popularity, excluding the default startup ticker.
+
 ## [2.2.1] - 2026-01-10
 
 ### Fixed
