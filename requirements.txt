@@ -1,3 +1,4 @@
-yfinance
+yfinance<1.0
 pandas
 PySide6
+urllib3<2.0

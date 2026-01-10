@@ -2,7 +2,14 @@
 
 A high-performance, native Python desktop application for professional technical analysis. While originally focused on TD Sequential, PyMIHCharts is evolving into a comprehensive charting suite with a growing library of technical indicators.
 
-![PyMIHCharts Screenshot](PyMIHCharts_Screenshot.png)
+![Default Theme](PyMIHCharts_Screenshot_Default.png)
+*PyMIHCharts Default Theme*
+
+![Lilac Theme](PyMIHCharts_Screenshot_Lilac.png)
+*PyMIHCharts Lilac Theme*
+
+![Dracula Theme](PyMIHCharts_Screenshot_Dracula.png)
+*PyMIHCharts Dracula Theme*
 
 ## Key Features
 

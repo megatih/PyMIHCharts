@@ -4,6 +4,7 @@
 # This script sets up a clean Python virtual environment and installs dependencies.
 
 set -e
+export PYTHONIOENCODING=utf-8
 
 echo "Starting PyMIHCharts setup for macOS..."
 
@@ -31,9 +32,9 @@ pip install --upgrade pip
 
 echo "Installing dependencies from requirements.txt..."
 if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
+    pip install --no-compile -r requirements.txt
 else
-    pip install yfinance pandas PySide6
+    pip install --no-compile yfinance pandas PySide6
 fi
 
 echo "------------------------------------------------"

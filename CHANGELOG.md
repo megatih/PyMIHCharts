@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1] - 2026-01-10
+
+### Fixed
+- **macOS Installation**: Resolved a critical crash during `setup_macos.sh` caused by `pip` attempting to byte-compile non-Python files in `PySide6`. Added `--no-compile` flag to installation commands.
+- **Dependency Compatibility**: Pinned `yfinance<1.0` and `urllib3<2.0` in `requirements.txt` to resolve SSL errors and `GenericAlias` type hint issues on Python 3.9 environments.
+- **Encoding Safety**: Added `export PYTHONIOENCODING=utf-8` to setup scripts to prevent logging crashes on systems with undefined locale settings.
+
+### Changed
+- **Documentation**: Updated `README.md` with high-quality screenshots showcasing the Default, Lilac, and Dracula color themes.
+
 ## [2.2.0] - 2026-01-09
 
 ### Added
