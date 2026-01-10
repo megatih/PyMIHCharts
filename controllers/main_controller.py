@@ -99,7 +99,7 @@ class MainController(QObject):
             self._refresh_recent_symbols_ui()
 
         # Capture current sidebar settings to pass to the background calculation
-        interval = self.view.sidebar.interval_combo.currentText()
+        interval = self.view.sidebar.interval_combo.currentData()
         settings = self._get_current_settings()
         self.model.request_data(symbol, interval, settings)
 
@@ -148,7 +148,7 @@ class MainController(QObject):
             'td_setup_max': self.view.sidebar.setup_spin.value(),
             'td_countdown_max': self.view.sidebar.countdown_spin.value(),
             'bb_period': self.view.sidebar.bb_period_spin.value(),
-            'bb_ma_type': self.view.sidebar.bb_ma_type_combo.currentText(),
+            'bb_ma_type': self.view.sidebar.bb_ma_type_combo.currentData(),
             'bb_std_devs': std_devs
         }
 

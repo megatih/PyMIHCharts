@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - **Automatic Period Optimization**: Implemented logic to dynamically adjust the data request period based on yfinance's intraday limits (e.g., 7 days for 1m, 60 days for 5m, 730 days for 1h), ensuring 100% successful downloads across all intervals.
 - **Auto-Reload on Change**: Configured the UI to automatically trigger a data fetch whenever a new interval is selected, providing instant visual feedback.
 
+### Changed
+- **Improved UI Labels**: Updated all shorthand interval and moving average codes (e.g., "1m", "1d", "SMA") to full descriptive names (e.g., "1 Minute", "1 Day", "Simple Moving Average") in the sidebar for better accessibility and user clarity. Internal logic still maintains efficient shorthand processing via Qt UserRoles.
+
 ## [2.3.0] - 2026-01-10
 
 ### Added

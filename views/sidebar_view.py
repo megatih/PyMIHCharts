@@ -168,12 +168,18 @@ class SidebarView(QFrame):
         self.data_section = CollapsibleSection("Data Settings")
         
         self.interval_combo = QComboBox()
-        self.interval_combo.addItems([
-            "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", 
-            "1d", "5d", "1wk", "1mo", "3mo"
-        ])
-        self.interval_combo.setCurrentText("1d")
-        self.interval_combo.currentTextChanged.connect(self.interval_changed.emit)
+        intervals = [
+            ("1 Minute", "1m"), ("2 Minutes", "2m"), ("5 Minutes", "5m"),
+            ("15 Minutes", "15m"), ("30 Minutes", "30m"), ("60 Minutes", "60m"),
+            ("90 Minutes", "90m"), ("1 Hour", "1h"), ("1 Day", "1d"),
+            ("5 Days", "5d"), ("1 Week", "1wk"), ("1 Month", "1mo"),
+            ("3 Months", "3mo")
+        ]
+        for text, data in intervals:
+            self.interval_combo.addItem(text, data)
+            
+        self.interval_combo.setCurrentIndex(8) # Default to 1 Day
+        self.interval_combo.currentTextChanged.connect(lambda: self.interval_changed.emit(self.interval_combo.currentData()))
         
         self.data_settings_layout = QFormLayout()
         self.data_settings_layout.addRow("Interval:", self.interval_combo)
@@ -243,7 +249,8 @@ class SidebarView(QFrame):
 
         self.bb_period_spin = self._create_spin_setting(1, 200, 20)
         self.bb_ma_type_combo = QComboBox()
-        self.bb_ma_type_combo.addItems(["SMA", "EMA"])
+        self.bb_ma_type_combo.addItem("Simple Moving Average", "SMA")
+        self.bb_ma_type_combo.addItem("Exponential Moving Average", "EMA")
         self.bb_ma_type_combo.currentTextChanged.connect(lambda: self.setting_changed.emit())
         
         self.bb_std_1_check = QCheckBox("1 SD")
