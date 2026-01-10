@@ -172,10 +172,8 @@ class MainController(QObject):
         self.view.set_loading_state(False)
         
         if "No data found" in message and self.last_symbol:
-            # Re-enable loading state to indicate a search is in progress
-            self.view.set_loading_state(True)
-            self.view.load_action.setText("Searching...")
-            self.model.search_symbol(self.last_symbol)
+            # Automatically fallback to search if ticker lookup fails
+            self.search_data(self.last_symbol)
             return
 
         QMessageBox.critical(self.view, "Data Error", message)
