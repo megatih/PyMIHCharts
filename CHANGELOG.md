@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - **XML Data Persistence**: Added `RecentSymbolsManager` to handle cross-session storage in a platform-native `recentsymbols.xml` file located in the application's configuration directory.
 - **Smart Tracking**: Configured the application to only count manual symbol entries and search selections toward popularity, excluding the default startup ticker.
 
+### Changed
+- **Unified Search Logic**: Refactored the `MainController` to centralize all symbol search triggers through a single method, ensuring consistent UI states (e.g., "Searching..." button text) whether search is triggered manually or as an automatic fallback.
+
 ## [2.2.1] - 2026-01-10
 
 ### Fixed
