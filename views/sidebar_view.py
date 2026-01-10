@@ -168,6 +168,7 @@ class SidebarView(QFrame):
         self.data_section = CollapsibleSection("Data Settings")
         
         self.interval_combo = QComboBox()
+        self.interval_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         intervals = [
             ("1 Minute", "1m"), ("2 Minutes", "2m"), ("5 Minutes", "5m"),
             ("15 Minutes", "15m"), ("30 Minutes", "30m"), ("60 Minutes", "60m"),
@@ -190,6 +191,7 @@ class SidebarView(QFrame):
         self.chart_section = CollapsibleSection("Chart Type")
         
         self.chart_type_combo = QComboBox()
+        self.chart_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.chart_type_combo.addItems(["Candlestick", "OHLC", "Line", "Heiken-Ashi"])
         self.chart_type_combo.currentTextChanged.connect(self.chart_type_changed.emit)
         
@@ -249,6 +251,7 @@ class SidebarView(QFrame):
 
         self.bb_period_spin = self._create_spin_setting(1, 200, 20)
         self.bb_ma_type_combo = QComboBox()
+        self.bb_ma_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.bb_ma_type_combo.addItem("Simple Moving Average", "SMA")
         self.bb_ma_type_combo.addItem("Exponential Moving Average", "EMA")
         self.bb_ma_type_combo.currentTextChanged.connect(lambda: self.setting_changed.emit())
