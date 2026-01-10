@@ -8,7 +8,7 @@ switch chart types, and adjust technical parameters.
 from typing import Optional, Dict, Any, List
 from PySide6.QtWidgets import (QVBoxLayout, QWidget, QCheckBox, QFrame, 
                              QSizePolicy, QSpinBox, QComboBox, QLabel, QFormLayout, 
-                             QApplication, QHBoxLayout, QToolButton, QScrollArea)
+                             QApplication, QHBoxLayout, QToolButton)
 from PySide6.QtCore import Qt, Signal
 
 
@@ -91,7 +91,7 @@ class SidebarView(QFrame):
     """
     View component containing control widgets for indicators and chart styling.
     
-    Organized as a Property Browser with collapsible sections and a scroll area.
+    Organized as a Property Browser with collapsible sections.
     """
     
     # Signals for the controller to handle application state changes
@@ -106,8 +106,6 @@ class SidebarView(QFrame):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setFrameShape(QFrame.NoFrame)
-        self.setMinimumWidth(320) # Increased to provide more horizontal space
-        
         self._tooltips = {}
         self._init_ui()
         self._define_tooltips()
@@ -162,18 +160,7 @@ class SidebarView(QFrame):
 
     def _init_ui(self):
         """Builds the layout and initializes widgets."""
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
-        
-        # Scroll Area to handle overflow
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setFrameShape(QFrame.NoFrame)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        
-        self.container = QWidget()
-        self.layout = QVBoxLayout(self.container)
+        self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(1) # Minimal spacing between sections
 
@@ -181,8 +168,6 @@ class SidebarView(QFrame):
         self.data_section = CollapsibleSection("Data Settings")
         
         self.interval_combo = QComboBox()
-        self.interval_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.interval_combo.setMinimumWidth(200) # Force width to accommodate long names
         intervals = [
             ("1 Minute", "1m"), ("2 Minutes", "2m"), ("5 Minutes", "5m"),
             ("15 Minutes", "15m"), ("30 Minutes", "30m"), ("60 Minutes", "60m"),
@@ -197,7 +182,6 @@ class SidebarView(QFrame):
         self.interval_combo.currentTextChanged.connect(lambda: self.interval_changed.emit(self.interval_combo.currentData()))
         
         self.data_settings_layout = QFormLayout()
-        self.data_settings_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         self.data_settings_layout.addRow("Interval:", self.interval_combo)
         self.data_section.add_layout(self.data_settings_layout)
         self.layout.addWidget(self.data_section)
@@ -206,8 +190,6 @@ class SidebarView(QFrame):
         self.chart_section = CollapsibleSection("Chart Type")
         
         self.chart_type_combo = QComboBox()
-        self.chart_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.chart_type_combo.setMinimumWidth(200)
         self.chart_type_combo.addItems(["Candlestick", "OHLC", "Line", "Heiken-Ashi"])
         self.chart_type_combo.currentTextChanged.connect(self.chart_type_changed.emit)
         
@@ -232,7 +214,6 @@ class SidebarView(QFrame):
         
         self.td_settings_layout = QFormLayout()
         self.td_settings_layout.setLabelAlignment(Qt.AlignLeft)
-        self.td_settings_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         
         self.lookback_spin = self._create_spin_setting(1, 20, 4)
         self.setup_spin = self._create_spin_setting(2, 50, 9)
@@ -265,12 +246,9 @@ class SidebarView(QFrame):
 
         self.bb_settings_layout = QFormLayout()
         self.bb_settings_layout.setLabelAlignment(Qt.AlignLeft)
-        self.bb_settings_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
 
         self.bb_period_spin = self._create_spin_setting(1, 200, 20)
         self.bb_ma_type_combo = QComboBox()
-        self.bb_ma_type_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.bb_ma_type_combo.setMinimumWidth(200)
         self.bb_ma_type_combo.addItem("Simple Moving Average", "SMA")
         self.bb_ma_type_combo.addItem("Exponential Moving Average", "EMA")
         self.bb_ma_type_combo.currentTextChanged.connect(lambda: self.setting_changed.emit())
@@ -304,7 +282,6 @@ class SidebarView(QFrame):
 
         self.font_settings_layout = QFormLayout()
         self.font_settings_layout.setLabelAlignment(Qt.AlignLeft)
-        self.font_settings_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
 
         base_font = QApplication.font()
         base_size = base_font.pointSize()
@@ -333,9 +310,6 @@ class SidebarView(QFrame):
         
         # Push all content to the top
         self.layout.addStretch()
-
-        self.scroll_area.setWidget(self.container)
-        self.main_layout.addWidget(self.scroll_area)
 
     def _create_spin_setting(self, min_v: int, max_v: int, default: int) -> QSpinBox:
         spin = QSpinBox()
