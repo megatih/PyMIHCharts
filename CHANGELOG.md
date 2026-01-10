@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - 2026-01-10
+
+### Added
+- **Multi-Interval Support**: Introduced a new **DATA SETTINGS** section at the top of the sidebar, allowing users to select between 13 different timeframes (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo).
+- **Automatic Period Optimization**: Implemented logic to dynamically adjust the data request period based on yfinance's intraday limits (e.g., 7 days for 1m, 60 days for 5m, 730 days for 1h), ensuring 100% successful downloads across all intervals.
+- **Auto-Reload on Change**: Configured the UI to automatically trigger a data fetch whenever a new interval is selected, providing instant visual feedback.
+
 ## [2.3.0] - 2026-01-10
 
 ### Added

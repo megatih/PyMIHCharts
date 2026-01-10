@@ -56,6 +56,7 @@ class MainController(QObject):
         """Wires up view signals to controller slots."""
         
         # --- View -> Controller ---
+        self.view.sidebar.interval_changed.connect(self.on_interval_changed)
         self.view.load_requested.connect(lambda s: self.load_data(s, is_manual=True))
         self.view.search_requested.connect(self.search_data)
         self.view.sidebar_toggled.connect(self.toggle_sidebar)
@@ -98,8 +99,16 @@ class MainController(QObject):
             self._refresh_recent_symbols_ui()
 
         # Capture current sidebar settings to pass to the background calculation
+        interval = self.view.sidebar.interval_combo.currentText()
         settings = self._get_current_settings()
-        self.model.request_data(symbol, settings)
+        self.model.request_data(symbol, interval, settings)
+
+    @Slot(str)
+    def on_interval_changed(self, interval: str):
+        """Automatically reloads data when the user selects a new interval."""
+        if self.last_symbol:
+            # Reload existing symbol with new interval (don't increment popularity)
+            self.load_data(self.last_symbol, is_manual=False)
 
     def _refresh_recent_symbols_ui(self):
         """Updates the dropdown list in the view with the latest top symbols."""

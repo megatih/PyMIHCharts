@@ -34,7 +34,8 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
     - Dynamically calculates margins and axis spacing using cached `QFontMetrics`.
 - **`sidebar_view.py`**: A modern **Property Browser** component.
     - Utilizes a custom `CollapsibleSection` widget for an "Accordion" style interface.
-    - Groups settings into logical, toggleable sections (**Chart Type**, **Indicators**, **Font Sizes**).
+    - Groups settings into logical, toggleable sections (**Data Settings**, **Chart Type**, **Indicators**, **Font Sizes**).
+    - Implements an interval selector with auto-reload logic.
     - Uses `QFormLayout` within sections for standardized label-field alignment.
     - Implements a centralized `_tooltips` dictionary and `set_tooltips_enabled()` method for global tooltip management.
 - **`search_dialog.py`**: A specialized dialog that presents a list of symbol search results to the user, allowing for selection and immediate loading.

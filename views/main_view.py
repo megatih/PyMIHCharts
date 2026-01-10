@@ -166,6 +166,7 @@ class MainView(QMainWindow):
         self.load_action.setEnabled(not is_loading)
         self.search_action.setEnabled(not is_loading)
         self.symbol_input.setEnabled(not is_loading)
+        self.sidebar.interval_combo.setEnabled(not is_loading)
         self.load_action.setText("Loading..." if is_loading else "Load")
         if is_loading:
             self.status_bar.showMessage("Downloading data...", 0)

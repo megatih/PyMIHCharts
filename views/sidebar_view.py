@@ -95,6 +95,7 @@ class SidebarView(QFrame):
     """
     
     # Signals for the controller to handle application state changes
+    interval_changed = Signal(str)
     chart_type_changed = Signal(str)
     td_toggle_changed = Signal(int)
     bb_toggle_changed = Signal(int)
@@ -113,6 +114,7 @@ class SidebarView(QFrame):
     def _define_tooltips(self):
         """Defines tooltip text for all sidebar components."""
         self._tooltips = {
+            self.interval_combo: "Specify the time interval for historical data (e.g., 1m for minutes, 1d for daily). Changing this will trigger a reload.",
             self.chart_type_combo: "Select the visual representation of price data (Candlestick, OHLC, Line, or Heiken-Ashi).",
             self.td_label: "Tom DeMark Sequential: A technical indicator used to identify exhaustion in price trends.",
             self.td_checkbox: "Toggle Tom DeMark (TD) Sequential indicator display.",
@@ -147,6 +149,7 @@ class SidebarView(QFrame):
     def set_tooltips_enabled(self, enabled: bool):
         """Enables or disables tooltips for all components in the sidebar."""
         # Toggle section tooltips
+        self.data_section.set_tooltips_enabled(enabled)
         self.chart_section.set_tooltips_enabled(enabled)
         self.indicator_section.set_tooltips_enabled(enabled)
         self.font_section.set_tooltips_enabled(enabled)
@@ -160,6 +163,22 @@ class SidebarView(QFrame):
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(1) # Minimal spacing between sections
+
+        # --- Section 0: Data Settings ---
+        self.data_section = CollapsibleSection("Data Settings")
+        
+        self.interval_combo = QComboBox()
+        self.interval_combo.addItems([
+            "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", 
+            "1d", "5d", "1wk", "1mo", "3mo"
+        ])
+        self.interval_combo.setCurrentText("1d")
+        self.interval_combo.currentTextChanged.connect(self.interval_changed.emit)
+        
+        self.data_settings_layout = QFormLayout()
+        self.data_settings_layout.addRow("Interval:", self.interval_combo)
+        self.data_section.add_layout(self.data_settings_layout)
+        self.layout.addWidget(self.data_section)
         
         # --- Section 1: Chart Type ---
         self.chart_section = CollapsibleSection("Chart Type")
@@ -312,6 +331,7 @@ class SidebarView(QFrame):
             QLabel {{ border: none; background: transparent; }}
             QToolButton {{ border: none; background: transparent; color: {theme['status_text']}; }}
         """
+        self.data_section.set_header_style(header_style)
         self.chart_section.set_header_style(header_style)
         self.indicator_section.set_header_style(header_style)
         self.font_section.set_header_style(header_style)

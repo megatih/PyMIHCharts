@@ -25,7 +25,10 @@ A high-performance, native Python desktop application for professional technical
     - **Polished Controls**: Standardized form layouts and native widgets for a professional look and feel.
     - **Adaptive Axis**: Date and Price axes that intelligently scale and format based on zoom levels.
     - **Advanced Interactions**: Mouse wheel zoom, click-drag panning, and **Pinch-to-Zoom** for touch devices.
-- **Data Integration**: Automatic historical daily data downloads via `yfinance`.
+- **Data Integration**:
+    - **Multi-Interval Support**: Toggle between various timeframes ranging from 1 minute (`1m`) to 3 months (`3mo`).
+    - **Automatic Period Optimization**: The app intelligently selects the maximum allowed data history for each interval to ensure successful downloads.
+    - **Automated Downloads**: Real-time historical daily and intraday data via `yfinance`.
 - **Smart Symbol Search**: If a ticker symbol is not found, the app automatically queries `yfinance` for matches and presents a selection dialog, ensuring users always find the right asset.
 - **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.
 - **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
@@ -79,7 +82,8 @@ PyMIHCharts is built using a professional **Model-View-Controller (MVC)** archit
 
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field, or select a previously used ticker from the **Recent Symbols** dropdown.
-2. Click **Load** to fetch data or **Search** to find similar symbols using partial names or tickers.
+2. Expand the **DATA SETTINGS** section at the top of the sidebar to select a timeframe (e.g., `1h` for hourly, `1d` for daily). Changing the interval will automatically reload the chart.
+3. Click **Load** to fetch data or **Search** to find similar symbols using partial names or tickers.
 3. Expand the **CHART TYPE** section in the sidebar to switch between Candlestick, OHLC, Line, or Heiken-Ashi.
 4. Expand the **INDICATORS** section to toggle **TD Sequential** or **Bollinger Bands** and adjust their specific parameters.
 5. Expand the **FONT SIZES** section at the bottom of the sidebar to dynamically scale the UI and chart text.

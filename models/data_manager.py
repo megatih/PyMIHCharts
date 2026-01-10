@@ -21,17 +21,30 @@ class DataWorker(QObject):
     finished = Signal(pd.DataFrame, dict)
     error = Signal(str)
 
-    def __init__(self, symbol: str, settings: dict):
+    def __init__(self, symbol: str, interval: str, settings: dict):
         """
-        Initializes the worker with target symbol and indicator settings.
+        Initializes the worker with target symbol, interval and indicator settings.
         
         Args:
             symbol: The ticker symbol to fetch (e.g., 'AAPL').
+            interval: The data interval (e.g., '1m', '1d').
             settings: Dictionary of indicator parameters.
         """
         super().__init__()
         self.symbol = symbol
+        self.interval = interval
         self.settings = settings
+
+    def _get_safe_period(self) -> str:
+        """Determines the maximum allowed yfinance period for the current interval."""
+        if self.interval == "1m":
+            return "7d"
+        elif self.interval in ["2m", "5m", "15m", "30m", "90m"]:
+            return "60d"
+        elif self.interval in ["60m", "1h"]:
+            return "730d"
+        else:
+            return "max"
 
     def run(self):
         """
@@ -40,11 +53,13 @@ class DataWorker(QObject):
         """
         try:
             ticker = yf.Ticker(self.symbol)
-            # Fetch maximum available daily history
-            df = ticker.history(period="max", interval="1d")
+            period = self._get_safe_period()
+            
+            # Fetch history with selected interval and safe period
+            df = ticker.history(period=period, interval=self.interval)
 
             if df.empty:
-                self.error.emit(f"No data found for symbol: {self.symbol}")
+                self.error.emit(f"No data found for symbol: {self.symbol} at interval {self.interval}")
                 return
 
             # Flatten MultiIndex columns if present (common in recent yfinance versions)
@@ -114,12 +129,13 @@ class DataManager(QObject):
         self._search_thread: Optional[QThread] = None
         self._search_worker: Optional[SearchWorker] = None
 
-    def request_data(self, symbol: str, settings: dict):
+    def request_data(self, symbol: str, interval: str, settings: dict):
         """
         Starts a new thread to fetch and process data for a symbol.
         
         Args:
             symbol: Ticker symbol to load.
+            interval: Data interval (e.g., '1d', '1h').
             settings: Indicator parameters to apply during calculation.
         """
         # Cleanup previous thread if it's still running to avoid race conditions
@@ -128,7 +144,7 @@ class DataManager(QObject):
             self._thread.wait()
 
         self._thread = QThread()
-        self._worker = DataWorker(symbol, settings)
+        self._worker = DataWorker(symbol, interval, settings)
         self._worker.moveToThread(self._thread)
 
         # Connect signals between worker and manager/thread
