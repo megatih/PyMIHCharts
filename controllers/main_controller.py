@@ -3,6 +3,7 @@ Main controller coordinating Model and View using AppState.
 """
 
 from typing import Optional, List, Dict, Any
+import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QApplication
 from PySide6.QtCore import Qt, QObject, Slot
 
@@ -125,6 +126,9 @@ class MainController(QObject):
             processed_df = self.indicator_manager.calculate_all(raw_df.copy(), self.state)
             self.model.current_data.df = processed_df
             
+            # Update the main chart container's data so hover emitting works
+            self.view.chart.df = processed_df
+            
             # Synchronize the new dataframe back to the panes
             self.view.chart.price_pane.set_data(
                 processed_df, 
@@ -190,13 +194,55 @@ class MainController(QObject):
         if not data:
             self.view.update_status_bar("Hover over chart to see price data")
             return
+            
+        theme = THEMES.get(self.state.theme_name, THEMES["Default"])
+        
+        # 1. Base OHLC
         html = (
-            f"<b>DATE:</b> <span style='color: #ffffff;'>{data['Date']}</span> | "
-            f"<b>O:</b> <span style='color: #ffaa00;'>{data['Open']:.2f}</span> | "
-            f"<b>H:</b> <span style='color: #00ff00;'>{data['High']:.2f}</span> | "
-            f"<b>L:</b> <span style='color: #ff5555;'>{data['Low']:.2f}</span> | "
-            f"<b>C:</b> <span style='color: #00ccff;'>{data['Close']:.2f}</span>"
+            f"<span style='color: {theme['text_main']};'>{data['Date']}</span> | "
+            f"O <span style='color: {theme['text_main']};'>{data['Open']:.2f}</span>  "
+            f"H <span style='color: {theme['bull']};'>{data['High']:.2f}</span>  "
+            f"L <span style='color: {theme['bear']};'>{data['Low']:.2f}</span>  "
+            f"C <span style='color: {theme['bull'] if data['Close'] >= data['Open'] else theme['bear']};'>{data['Close']:.2f}</span>"
         )
+        
+        # 2. Bollinger Bands
+        if self.state.bb_settings.visible:
+            bb_parts = []
+            mid_v = data.get('bb_middle')
+            if mid_v is not None and not pd.isna(mid_v):
+                bb_parts.append(f"M <span style='color: {theme['bb_mid']};'>{mid_v:.2f}</span>")
+            
+            for std in self.state.bb_settings.std_devs:
+                up_v = data.get(f'bb_upper_{std}')
+                lo_v = data.get(f'bb_lower_{std}')
+                std_lbl = int(std) if std == int(std) else std
+                
+                if up_v is not None and not pd.isna(up_v):
+                    bb_parts.append(f"U({std_lbl}) <span style='color: {theme['bb_upper']};'>{up_v:.2f}</span>")
+                if lo_v is not None and not pd.isna(lo_v):
+                    bb_parts.append(f"L({std_lbl}) <span style='color: {theme['bb_lower']};'>{lo_v:.2f}</span>")
+            
+            if bb_parts:
+                html += f" | BB({self.state.bb_settings.period}) " + "  ".join(bb_parts)
+                
+        # 3. TD Sequential
+        if self.state.td_settings.visible:
+            td_parts = []
+            sc, st = data.get('setup_count', 0), data.get('setup_type')
+            if sc > 0:
+                color = theme['setup_buy'] if st == 'buy' else theme['setup_sell']
+                td_parts.append(f"S({'B' if st == 'buy' else 'S'}) <span style='color: {color};'>{int(sc)}</span>")
+            
+            cc, ct = data.get('countdown_count', 0), data.get('countdown_type')
+            if cc > 0:
+                disp_c = "13+" if cc == 12.5 else str(int(cc))
+                color = theme['cd_buy'] if ct == 'buy' else theme['cd_sell']
+                td_parts.append(f"C({'B' if ct == 'buy' else 'S'}) <span style='color: {color};'>{disp_c}</span>")
+                
+            if td_parts:
+                html += " | TD " + "  ".join(td_parts)
+
         self.view.update_status_bar(html)
 
     def _apply_theme(self, name: str):

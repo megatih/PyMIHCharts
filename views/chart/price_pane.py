@@ -285,11 +285,11 @@ class PricePane(ChartPane):
             ("C", c, "bull" if is_bull else "bear")
         ]:
             painter.setPen(QColor(self.theme.get("text_label", "#808080")))
-            painter.drawText(curr_x, y_pos, f"{label}:")
-            curr_x += self.fm_labels.horizontalAdvance(f"{label}:")
+            painter.drawText(curr_x, y_pos, label)
+            curr_x += self.fm_labels.horizontalAdvance(label) + 4
             
             painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
-            val_txt = f"{val:.2f} "
+            val_txt = f"{val:.2f}  "
             painter.drawText(curr_x, y_pos, val_txt)
             curr_x += self.fm_labels.horizontalAdvance(val_txt)
 
@@ -300,29 +300,44 @@ class PricePane(ChartPane):
         
         if self.show_bb:
             painter.setPen(QColor(self.theme.get("text_label", "#808080")))
-            painter.drawText(curr_x, y_pos, "BB: ")
-            curr_x += self.fm_labels.horizontalAdvance("BB: ")
+            bb_hdr = f"BB({self.bb_settings.period}) "
+            painter.drawText(curr_x, y_pos, bb_hdr)
+            curr_x += self.fm_labels.horizontalAdvance(bb_hdr)
             
-            # Basis
+            # Basis/Mid
             val = last_row.get('bb_middle', np.nan)
-            txt = f"Basis {val:.2f} " if not np.isnan(val) else "Basis - "
-            painter.setPen(QColor(self.theme.get("bb_mid", "#ffffff")))
-            painter.drawText(curr_x, y_pos, txt)
-            curr_x += self.fm_labels.horizontalAdvance(txt)
+            if not np.isnan(val):
+                painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                painter.drawText(curr_x, y_pos, "M")
+                curr_x += self.fm_labels.horizontalAdvance("M") + 4
+                painter.setPen(QColor(self.theme.get("bb_mid", "#ffffff")))
+                txt = f"{val:.2f}  "
+                painter.drawText(curr_x, y_pos, txt)
+                curr_x += self.fm_labels.horizontalAdvance(txt)
             
-            # Bands (all enabled stds)
+            # Bands
             for std in self.bb_std_devs:
                 u_val = last_row.get(f'bb_upper_{std}', np.nan)
-                u_txt = f"Up({std}) {u_val:.2f} " if not np.isnan(u_val) else f"Up({std}) - "
-                painter.setPen(QColor(self.theme.get("bb_upper", "#ffffff")))
-                painter.drawText(curr_x, y_pos, u_txt)
-                curr_x += self.fm_labels.horizontalAdvance(u_txt)
+                if not np.isnan(u_val):
+                    painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                    u_lbl = f"U({int(std) if std == int(std) else std})"
+                    painter.drawText(curr_x, y_pos, u_lbl)
+                    curr_x += self.fm_labels.horizontalAdvance(u_lbl) + 4
+                    painter.setPen(QColor(self.theme.get("bb_upper", "#ffffff")))
+                    txt = f"{u_val:.2f}  "
+                    painter.drawText(curr_x, y_pos, txt)
+                    curr_x += self.fm_labels.horizontalAdvance(txt)
                 
                 l_val = last_row.get(f'bb_lower_{std}', np.nan)
-                l_txt = f"Lo({std}) {l_val:.2f} " if not np.isnan(l_val) else f"Lo({std}) - "
-                painter.setPen(QColor(self.theme.get("bb_lower", "#ffffff")))
-                painter.drawText(curr_x, y_pos, l_txt)
-                curr_x += self.fm_labels.horizontalAdvance(l_txt)
+                if not np.isnan(l_val):
+                    painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                    l_lbl = f"L({int(std) if std == int(std) else std})"
+                    painter.drawText(curr_x, y_pos, l_lbl)
+                    curr_x += self.fm_labels.horizontalAdvance(l_lbl) + 4
+                    painter.setPen(QColor(self.theme.get("bb_lower", "#ffffff")))
+                    txt = f"{l_val:.2f}  "
+                    painter.drawText(curr_x, y_pos, txt)
+                    curr_x += self.fm_labels.horizontalAdvance(txt)
             
             if self.show_td:
                 painter.setPen(QColor(self.theme.get("text_label", "#808080")))
@@ -331,25 +346,35 @@ class PricePane(ChartPane):
 
         if self.show_td:
             painter.setPen(QColor(self.theme.get("text_label", "#808080")))
-            painter.drawText(curr_x, y_pos, "TD: ")
-            curr_x += self.fm_labels.horizontalAdvance("TD: ")
+            painter.drawText(curr_x, y_pos, "TD ")
+            curr_x += self.fm_labels.horizontalAdvance("TD ")
             
             s_count = last_row.get('setup_count', 0)
             s_type = last_row.get('setup_type')
             if s_count > 0:
-                txt = f"Setup({s_type}) {s_count} "
+                painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                s_lbl = f"S({'B' if s_type == 'buy' else 'S'})"
+                painter.drawText(curr_x, y_pos, s_lbl)
+                curr_x += self.fm_labels.horizontalAdvance(s_lbl) + 4
+                
                 color_key = "setup_buy" if s_type == 'buy' else "setup_sell"
                 painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
+                txt = f"{int(s_count)}  "
                 painter.drawText(curr_x, y_pos, txt)
                 curr_x += self.fm_labels.horizontalAdvance(txt)
                 
             c_count = last_row.get('countdown_count', 0)
             c_type = last_row.get('countdown_type')
             if c_count > 0:
+                painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                c_lbl = f"C({'B' if c_type == 'buy' else 'S'})"
+                painter.drawText(curr_x, y_pos, c_lbl)
+                curr_x += self.fm_labels.horizontalAdvance(c_lbl) + 4
+                
                 disp_c = "13+" if c_count == 12.5 else str(int(c_count))
-                txt = f"CD({c_type}) {disp_c} "
                 color_key = "cd_buy" if c_type == 'buy' else "cd_sell"
                 painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
+                txt = f"{disp_c}  "
                 painter.drawText(curr_x, y_pos, txt)
                 curr_x += self.fm_labels.horizontalAdvance(txt)
 

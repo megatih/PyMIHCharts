@@ -40,7 +40,8 @@ The application follows a strict Model-View-Controller (MVC) pattern combined wi
 ## Features & UI Interactions
 
 - **Asynchronous Workflow**: Background threads handle all data-heavy operations.
-- **Dynamic Legend Engine**: Real-time, color-coded legend system for displaying latest indicator and OHLC values.
+- **Dynamic Legend Engine**: Real-time, color-coded legend and status bar system with professional abbreviations (O, H, L, C, M, U, L, S, C).
+- **Interactive Synchronization**: Specialized controller logic ensures parent container and child panes maintain data parity for immediate hover feedback.
 - **Multi-Pane Architecture**: Ready for sub-pane indicators (RSI/MACD) through the `ChartPane` system.
 - **JSON Persistence**: Modernized configuration storage.
 - **Dynamic Scaling**: Smart vertical scaling and coordinate mapping for pixel-perfect rendering.

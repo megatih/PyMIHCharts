@@ -32,7 +32,7 @@ A high-performance, native Python desktop application for professional technical
     - **Automatic Period Optimization**: The app intelligently selects the maximum allowed data history for each interval to ensure successful downloads.
     - **Automated Downloads**: Real-time historical daily and intraday data via `yfinance`.
 - **Smart Symbol Search**: If a ticker symbol is not found, the app automatically queries `yfinance` for matches and presents a selection dialog, ensuring users always find the right asset.
-- **Enhanced Status Bar**: Real-time, color-coded price data (O, H, L, C) displayed in a bolded, rich-text format.
+- **Enhanced Status Bar**: Real-time, color-coded price (O, H, L, C) and indicator (BB, TD) data synchronized with the mouse crosshair, using professional abbreviations for maximum clarity.
 - **Dynamic Theme Engine**: Support for multiple color schemes including **Default**, **Lilac** (soft aesthetic), and **Dracula**, switchable at any time via the "View" menu.
 - **Multi-Chart Type Rendering**:
     - **Native Candlestick**: High-performance rendering of traditional candles.

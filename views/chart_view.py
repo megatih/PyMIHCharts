@@ -134,10 +134,9 @@ class CandlestickChart(QWidget):
             idx_act = max(0, len(self.df) - self.scroll_offset - self.visible_bars) + idx_rel
             if 0 <= idx_act < len(self.df):
                 r = self.df.iloc[idx_act]
-                self.hovered_data_changed.emit({
-                    'Date': self.df.index[idx_act].strftime('%Y-%m-%d'), 
-                    'Open': r['Open'], 'High': r['High'], 'Low': r['Low'], 'Close': r['Close']
-                })
+                data = r.to_dict()
+                data['Date'] = self.df.index[idx_act].strftime('%Y-%m-%d')
+                self.hovered_data_changed.emit(data)
                 return
         self.hovered_data_changed.emit(None)
 
