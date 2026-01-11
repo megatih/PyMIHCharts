@@ -74,11 +74,11 @@ python3 main.py
 ```
 
 ## Architecture
-PyMIHCharts is built using a professional **Model-View-Controller (MVC)** architecture with a fully asynchronous processing engine.
+PyMIHCharts is built using a professional, modular **Model-View-Controller (MVC)** architecture designed for extensibility.
 
-- **Model**: High-performance vectorized math and threaded data workers for non-blocking performance.
-- **View**: Responsive, layout-driven native PySide6 rendering engine.
-- **Controller**: Real-time signal coordination between the UI and background processing threads.
+- **Model**: Features a **Registry-based Indicator System** and high-performance vectorized math. Asynchronous workers ensure the UI remains responsive.
+- **View**: A **Multi-Pane Rendering Engine** built on PySide6, allowing for independent scaling of price and technical indicators.
+- **Controller**: Orchestrates application state (`AppState`) and synchronizes background processing with the interactive UI.
 
 ## How to Use
 1. Enter a stock or crypto ticker (e.g., `AAPL`, `BTC-USD`) in the input field, or select a previously used ticker from the **Recent Symbols** dropdown.

@@ -1,94 +1,62 @@
 """
-Model component for fetching and managing market data with threading support.
-
-The DataManager coordinates between the View/Controller and background workers
-to ensure that networking and heavy math operations do not freeze the UI.
+Model component for fetching market data with threading support.
 """
 
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Optional, Dict, Any, List
 import yfinance as yf
 import pandas as pd
 from PySide6.QtCore import QObject, Signal, QThread
-from models.indicators import calculate_indicators
-
+from models.indicators.registry import IndicatorManager
+from models.data_models import AppState, ChartMetadata, ChartData
 
 class DataWorker(QObject):
     """
-    Worker to handle data fetching and indicator calculation in a separate thread.
-    
-    This object is moved to a QThread to execute its 'run' method asynchronously.
+    Background worker for data fetching and technical analysis.
     """
-    finished = Signal(pd.DataFrame, dict)
+    finished = Signal(ChartData)
     error = Signal(str)
 
-    def __init__(self, symbol: str, interval: str, settings: dict):
-        """
-        Initializes the worker with target symbol, interval and indicator settings.
-        
-        Args:
-            symbol: The ticker symbol to fetch (e.g., 'AAPL').
-            interval: The data interval (e.g., '1m', '1d').
-            settings: Dictionary of indicator parameters.
-        """
+    def __init__(self, symbol: str, app_state: AppState):
         super().__init__()
         self.symbol = symbol
-        self.interval = interval
-        self.settings = settings
+        self.app_state = app_state
+        self.indicator_manager = IndicatorManager()
 
     def _get_safe_period(self) -> str:
-        """Determines the maximum allowed yfinance period for the current interval."""
-        if self.interval == "1m":
-            return "7d"
-        elif self.interval in ["2m", "5m", "15m", "30m", "90m"]:
-            return "60d"
-        elif self.interval in ["60m", "1h"]:
-            return "730d"
-        else:
-            return "max"
+        interval = self.app_state.interval.value
+        if interval == "1m": return "7d"
+        elif interval in ["2m", "5m", "15m", "30m", "90m"]: return "60d"
+        elif interval in ["60m", "1h"]: return "730d"
+        return "max"
 
     def run(self):
-        """
-        Executes the long-running data tasks: fetching from yfinance and 
-        calculating technical indicators.
-        """
         try:
             ticker = yf.Ticker(self.symbol)
-            period = self._get_safe_period()
-            
-            # Fetch history with selected interval and safe period
-            df = ticker.history(period=period, interval=self.interval)
+            df = ticker.history(period=self._get_safe_period(), interval=self.app_state.interval.value)
 
             if df.empty:
-                self.error.emit(f"No data found for symbol: {self.symbol} at interval {self.interval}")
+                self.error.emit(f"No data found for symbol: {self.symbol}")
                 return
 
-            # Flatten MultiIndex columns if present (common in recent yfinance versions)
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
 
-            # Perform indicator calculation in the worker thread to keep UI responsive
-            processed_df = calculate_indicators(df, self.settings)
+            # Perform calculations using the modular manager
+            processed_df = self.indicator_manager.calculate_all(df.copy(), self.app_state)
 
-            # Fetch metadata for display
             info = ticker.info
-            metadata = {
-                'symbol': self.symbol,
-                'full_name': info.get('longName', self.symbol),
-                'exchange': info.get('exchange', 'Unknown'),
-                'currency': info.get('currency', 'USD')
-            }
+            metadata = ChartMetadata(
+                symbol=self.symbol,
+                full_name=info.get('longName', self.symbol),
+                exchange=info.get('exchange', 'Unknown'),
+                currency=info.get('currency', 'USD')
+            )
 
-            self.finished.emit(processed_df, metadata)
+            self.finished.emit(ChartData(df=processed_df, metadata=metadata, raw_df=df))
         except Exception as e:
             self.error.emit(str(e))
 
-
 class SearchWorker(QObject):
-    """
-    Worker to handle symbol search in a separate thread.
-    
-    Triggered when a direct lookup fails, suggesting similar symbols to the user.
-    """
     results_ready = Signal(list)
     error = Signal(str)
 
@@ -97,74 +65,46 @@ class SearchWorker(QObject):
         self.query = query
 
     def run(self):
-        """Executes the search query using yfinance's search API."""
         try:
             search = yf.Search(self.query, news_count=0)
-            # Accessing .quotes triggers the actual web request
-            quotes = search.quotes
-            self.results_ready.emit(quotes)
+            self.results_ready.emit(search.quotes)
         except Exception as e:
             self.error.emit(str(e))
 
-
 class DataManager(QObject):
     """
-    Manages data states and coordinates threading for data operations.
-    
-    The DataManager maintains the 'raw' (undownloaded) state of data and
-    orchestrates QThread lifecycles for both fetching and searching.
+    Coordinates threading and manages the current dataset.
     """
-    data_ready = Signal(pd.DataFrame, dict)
+    data_ready = Signal(ChartData)
     loading_error = Signal(str)
     search_results = Signal(list)
 
     def __init__(self):
         super().__init__()
-        self.raw_df: Optional[pd.DataFrame] = None
-        self.metadata: Dict[str, str] = {}
-        
-        # Thread and worker management attributes
+        self.current_data: Optional[ChartData] = None
         self._thread: Optional[QThread] = None
         self._worker: Optional[DataWorker] = None
         self._search_thread: Optional[QThread] = None
         self._search_worker: Optional[SearchWorker] = None
 
-    def request_data(self, symbol: str, interval: str, settings: dict):
-        """
-        Starts a new thread to fetch and process data for a symbol.
-        
-        Args:
-            symbol: Ticker symbol to load.
-            interval: Data interval (e.g., '1d', '1h').
-            settings: Indicator parameters to apply during calculation.
-        """
-        # Cleanup previous thread if it's still running to avoid race conditions
+    def request_data(self, symbol: str, app_state: AppState):
         if self._thread and self._thread.isRunning():
             self._thread.quit()
             self._thread.wait()
 
         self._thread = QThread()
-        self._worker = DataWorker(symbol, interval, settings)
+        self._worker = DataWorker(symbol, app_state)
         self._worker.moveToThread(self._thread)
 
-        # Connect signals between worker and manager/thread
         self._thread.started.connect(self._worker.run)
         self._worker.finished.connect(self._handle_finished)
         self._worker.error.connect(self._handle_error)
-        
-        # Ensure thread cleanup on finish or error
         self._worker.finished.connect(self._thread.quit)
         self._worker.error.connect(self._thread.quit)
         
         self._thread.start()
 
     def search_symbol(self, query: str):
-        """
-        Starts a new thread to search for symbols matching the query.
-        
-        Args:
-            query: The search string (e.g., 'APPLE' instead of 'AAPL').
-        """
         if self._search_thread and self._search_thread.isRunning():
             self._search_thread.quit()
             self._search_thread.wait()
@@ -175,19 +115,14 @@ class DataManager(QObject):
         
         self._search_thread.started.connect(self._search_worker.run)
         self._search_worker.results_ready.connect(self.search_results.emit)
-        
-        # Cleanup connections
         self._search_worker.results_ready.connect(self._search_thread.quit)
         self._search_worker.error.connect(self._search_thread.quit)
         
         self._search_thread.start()
 
-    def _handle_finished(self, df: pd.DataFrame, metadata: dict):
-        """Internal handler for successful data loading."""
-        self.raw_df = df
-        self.metadata = metadata
-        self.data_ready.emit(df, metadata)
+    def _handle_finished(self, chart_data: ChartData):
+        self.current_data = chart_data
+        self.data_ready.emit(chart_data)
 
     def _handle_error(self, message: str):
-        """Internal handler for data loading errors."""
         self.loading_error.emit(message)
