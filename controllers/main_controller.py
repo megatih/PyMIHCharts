@@ -32,6 +32,7 @@ class MainController(QObject):
         
         # Initial Bootstrapping
         self._apply_theme("Default")
+        self._on_indicator_settings_changed()
         self._sync_font_settings()
         self._refresh_recent_symbols_ui()
         self._load_initial_data()
@@ -114,6 +115,8 @@ class MainController(QObject):
         self.view.chart.price_pane.show_td = self.state.td_settings.visible
         self.view.chart.price_pane.show_bb = self.state.bb_settings.visible
         self.view.chart.price_pane.bb_std_devs = stds
+        self.view.chart.price_pane.td_settings = self.state.td_settings
+        self.view.chart.price_pane.bb_settings = self.state.bb_settings
         
         # If we have raw data, recalculate indicators
         if self.model.current_data:
@@ -156,7 +159,8 @@ class MainController(QObject):
             'symbol': chart_data.metadata.symbol,
             'full_name': chart_data.metadata.full_name,
             'exchange': chart_data.metadata.exchange,
-            'currency': chart_data.metadata.currency
+            'currency': chart_data.metadata.currency,
+            'interval': self.state.interval.value
         })
 
     def _on_loading_error(self, msg: str):

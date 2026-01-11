@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 from views.chart.chart_pane import ChartPane
 from models.enums import ChartType
+from models.data_models import TDSequentialSettings, BollingerBandsSettings
 
 class PricePane(ChartPane):
     """
@@ -23,7 +24,9 @@ class PricePane(ChartPane):
         self.metadata: Dict[str, str] = {}
         self.chart_type = ChartType.CANDLESTICK
         
-        # Indicator Toggles
+        # Indicator Settings
+        self.td_settings = TDSequentialSettings()
+        self.bb_settings = BollingerBandsSettings()
         self.show_td = True
         self.show_bb = False
         self.bb_std_devs: List[float] = [2.0]
@@ -246,11 +249,109 @@ class PricePane(ChartPane):
                                  Qt.AlignCenter, "13+" if ccs[i] == 12.5 else str(int(ccs[i])))
 
     def _draw_header(self, painter: QPainter):
+        if self.df is None or self.df.empty:
+            return
+            
+        last_row = self.df.iloc[-1]
         painter.setPen(QColor(self.theme.get("text_main", "#ffffff")))
         painter.setFont(self.font_main)
-        txt = f"{self.metadata.get('full_name', '')} ({self.metadata.get('symbol', '')}) - " \
-              f"{self.metadata.get('exchange', '')} - {self.metadata.get('currency', '')}"
-        painter.drawText(20, 25, txt)
+        
+        # Main Header with Interval
+        symbol = self.metadata.get('symbol', '')
+        name = self.metadata.get('full_name', '')
+        exchange = self.metadata.get('exchange', '')
+        currency = self.metadata.get('currency', '')
+        interval = self.metadata.get('interval', '')
+        
+        header_txt = f"{name} ({symbol}) - {exchange} - {currency}"
+        if interval:
+            header_txt += f" - [{interval}]"
+            
+        painter.drawText(20, 25, header_txt)
+
+        # Indicator Legend
+        painter.setFont(self.font_labels)
+        curr_x = 20
+        y_pos = 45
+        
+        # OHLC Latest
+        o, h, l, c = last_row['Open'], last_row['High'], last_row['Low'], last_row['Close']
+        is_bull = c >= o
+        
+        for label, val, color_key in [
+            ("O", o, "text_main"),
+            ("H", h, "bull"),
+            ("L", l, "bear"),
+            ("C", c, "bull" if is_bull else "bear")
+        ]:
+            painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+            painter.drawText(curr_x, y_pos, f"{label}:")
+            curr_x += self.fm_labels.horizontalAdvance(f"{label}:")
+            
+            painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
+            val_txt = f"{val:.2f} "
+            painter.drawText(curr_x, y_pos, val_txt)
+            curr_x += self.fm_labels.horizontalAdvance(val_txt)
+
+        if self.show_bb or self.show_td:
+            painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+            painter.drawText(curr_x, y_pos, "• ")
+            curr_x += self.fm_labels.horizontalAdvance("• ")
+        
+        if self.show_bb:
+            painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+            painter.drawText(curr_x, y_pos, "BB: ")
+            curr_x += self.fm_labels.horizontalAdvance("BB: ")
+            
+            # Basis
+            val = last_row.get('bb_middle', np.nan)
+            txt = f"Basis {val:.2f} " if not np.isnan(val) else "Basis - "
+            painter.setPen(QColor(self.theme.get("bb_mid", "#ffffff")))
+            painter.drawText(curr_x, y_pos, txt)
+            curr_x += self.fm_labels.horizontalAdvance(txt)
+            
+            # Bands (all enabled stds)
+            for std in self.bb_std_devs:
+                u_val = last_row.get(f'bb_upper_{std}', np.nan)
+                u_txt = f"Up({std}) {u_val:.2f} " if not np.isnan(u_val) else f"Up({std}) - "
+                painter.setPen(QColor(self.theme.get("bb_upper", "#ffffff")))
+                painter.drawText(curr_x, y_pos, u_txt)
+                curr_x += self.fm_labels.horizontalAdvance(u_txt)
+                
+                l_val = last_row.get(f'bb_lower_{std}', np.nan)
+                l_txt = f"Lo({std}) {l_val:.2f} " if not np.isnan(l_val) else f"Lo({std}) - "
+                painter.setPen(QColor(self.theme.get("bb_lower", "#ffffff")))
+                painter.drawText(curr_x, y_pos, l_txt)
+                curr_x += self.fm_labels.horizontalAdvance(l_txt)
+            
+            if self.show_td:
+                painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+                painter.drawText(curr_x, y_pos, "• ")
+                curr_x += self.fm_labels.horizontalAdvance("• ")
+
+        if self.show_td:
+            painter.setPen(QColor(self.theme.get("text_label", "#808080")))
+            painter.drawText(curr_x, y_pos, "TD: ")
+            curr_x += self.fm_labels.horizontalAdvance("TD: ")
+            
+            s_count = last_row.get('setup_count', 0)
+            s_type = last_row.get('setup_type')
+            if s_count > 0:
+                txt = f"Setup({s_type}) {s_count} "
+                color_key = "setup_buy" if s_type == 'buy' else "setup_sell"
+                painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
+                painter.drawText(curr_x, y_pos, txt)
+                curr_x += self.fm_labels.horizontalAdvance(txt)
+                
+            c_count = last_row.get('countdown_count', 0)
+            c_type = last_row.get('countdown_type')
+            if c_count > 0:
+                disp_c = "13+" if c_count == 12.5 else str(int(c_count))
+                txt = f"CD({c_type}) {disp_c} "
+                color_key = "cd_buy" if c_type == 'buy' else "cd_sell"
+                painter.setPen(QColor(self.theme.get(color_key, "#ffffff")))
+                painter.drawText(curr_x, y_pos, txt)
+                curr_x += self.fm_labels.horizontalAdvance(txt)
 
     def _draw_crosshairs(self, painter: QPainter):
         x = self.mouse_pos.x()

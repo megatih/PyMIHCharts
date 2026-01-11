@@ -19,6 +19,8 @@ A high-performance, native Python desktop application for professional technical
     - **Recent Symbols Dropdown**: High-performance `QComboBox` replaces the standard input field, providing a persistent history of recently used tickers.
     - **Smart Popularity Sorting**: The symbols list is automatically ordered by usage frequency, stored in a platform-native XML configuration file.
     - **Explicit Search**: Dedicated **Search** button for manual ticker discovery via `yfinance`.
+    - **Dynamic Legend**: Real-time, color-coded legend displaying the latest values for all enabled indicators and OHLC data.
+    - **Interval Awareness**: The chart header automatically displays the active timeframe (e.g., `[1d]`) for the loaded data.
     - **Interactive Tooltips**: Detailed descriptive tooltips for all sidebar settings and labels, toggleable via the "View" menu.
     - **Adjustable Layout**: **Splitter** control allows dynamic resizing of the chart and sidebar areas.
     - **Dynamic Typography**: Real-time control over application-wide font sizes and relative chart text offsets.
